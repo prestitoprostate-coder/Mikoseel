@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mikosell Pro - Connexion</title>
+<style>
+/* === STYLE GLOBAL === */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', sans-serif;
+  background: radial-gradient(circle at top, #1a1a2e, #0f0f1a);
+  color: #fff;
+  overflow-x: hidden;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 40px;
+}
+
+/* === LOGOS FLOTTANTS === */
+#background {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.logo {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  fill: rgba(255,204,0,0.5);
+  animation: float linear infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+}
+
+/* === INTRO === */
+#intro {
+  text-align: center;
+  padding: 20px;
+  font-size: 16px;
+  line-height: 1.5;
+  max-width: 600px;
+  margin-bottom: 20px;
+  animation: slideIn 2s ease-out;
+  z-index: 1;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-50px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* === FORMULAIRE === */
+.container {
+  background: rgba(255,255,255,0.05);
+  padding: 40px;
+  border-radius: 20px;
+  width: 350px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  text-align: center;
+  z-index: 1;
+}
+
+h2 { color: #ffcc00; margin-bottom: 20px; }
+
+input, select { width: 100%; padding: 12px; border-radius: 10px; border: none; margin-bottom: 15px; font-size: 16px; }
+
+button { width: 100%; padding: 12px; border: none; border-radius: 10px; background: #ffcc00; color: #1a1a2e; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 16px; }
+
+button:hover { background: #ff9900; }
+
+#error { color: #ff4d4d; margin-bottom: 10px; }
+#success { color: #00ff99; margin-bottom: 10px; }
+
+p { font-size: 14px; margin-top: 10px; }
+a { color: #ffcc00; text-decoration: none; cursor: pointer; }
+
+#terms {
+  max-width: 600px; margin: 30px auto 40px; font-size: 12px; color: #ccc;
+  background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; text-align: center; z-index: 1;
+}
+</style>
+</head>
+<body>
+
+<div id="background"></div>
+
+<div id="intro">
+  <h2>Comment fonctionne Mikosell Pro ?</h2>
+  <p>Créez un compte ou connectez-vous.<br>
+     Ajoutez vos produits et services.<br>
+     Suivez vos ventes et vos clients facilement.<br>
+     Gérez tout depuis votre tableau de bord simple et intuitif.</p>
+</div>
+
+<div class="container">
+  <h2 id="formTitle">Connexion</h2>
+  <div id="error"></div>
+  <div id="success"></div>
+
+  <input type="email" id="email" placeholder="Adresse email">
+  <input type="password" id="password" placeholder="Mot de passe">
+  <input type="email" id="referral" placeholder="Email du parrain (facultatif)" style="display:none;">
+
+  <select id="country" style="display:none;">
+    <option value="BJ">Bénin (+229)</option>
+    <option value="BF">Burkina Faso (+226)</option>
+    <option value="CV">Cap-Vert (+238)</option>
+    <option value="CI">Côte d’Ivoire (+225)</option>
+    <option value="GM">Gambie (+220)</option>
+    <option value="GH">Ghana (+233)</option>
+    <option value="GN">Guinée (+224)</option>
+    <option value="GW">Guinée-Bissau (+245)</option>
+    <option value="LR">Liberia (+231)</option>
+    <option value="ML">Mali (+223)</option>
+    <option value="MR">Mauritanie (+222)</option>
+    <option value="NE">Niger (+227)</option>
+    <option value="NG">Nigeria (+234)</option>
+    <option value="SN">Sénégal (+221)</option>
+    <option value="SL">Sierra Leone (+232)</option>
+    <option value="TG">Togo (+228)</option>
+  </select>
+
+  <input type="text" id="phone" placeholder="Numéro de téléphone (facultatif)" style="display:none;">
+  <button id="actionButton" onclick="login()">Se connecter</button>
+  <p id="toggleText">Pas encore de compte ? <a onclick="toggleForm()">Créer un compte</a></p>
+</div>
+
+<div id="terms">
+  <h3>Conditions d’utilisation</h3>
+  <p>En utilisant ce site, vous acceptez que vos données soient utilisées pour la gestion de votre compte et vos activités sur Mikosell Pro.
+  Vos informations personnelles ne seront jamais partagées sans votre consentement.
+  Vous devez fournir des informations exactes et maintenir votre mot de passe confidentiel.</p>
+</div>
+
+<script>
+// UTILISATEURS SIMULÉS
+let users = [
+  {email:'user1@example.com', password:'pass123', phone:'+22960000000', country:'BJ', balance:0},
+  {email:'admin@example.com', password:'admin123', phone:'+22561111111', country:'CI', balance:0},
+  {email:'test@example.com', password:'test1234', phone:'+2348012345678', country:'NG', balance:0}
+];
+
+// 🔥 Correction : recharger les utilisateurs depuis le localStorage s’ils existent
+const savedUsers = localStorage.getItem('users');
+if (savedUsers) {
+  try {
+    users = JSON.parse(savedUsers);
+  } catch(e) {
+    console.error("Erreur de lecture du localStorage:", e);
+  }
+}
+
+let isSignup = false;
+
+// VALIDATION EMAIL
+function isValidEmail(email){
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(email);
+}
+
+// VALIDATION NUMÉRO PAR PAYS
+function isValidPhoneByCountry(phone, country){
+  phone = phone.replace(/\s+/g,'');
+  const patterns = {
+    BJ: /^\+229\d{8}$/, BF: /^\+226\d{8}$/, CV: /^\+238\d{7}$/, CI: /^\+225\d{8}$/,
+    GM: /^\+220\d{7}$/, GH: /^\+233\d{9}$/, GN: /^\+224\d{8}$/, GW: /^\+245\d{7}$/,
+    LR: /^\+231\d{8}$/, ML: /^\+223\d{8}$/, MR: /^\+222\d{8}$/, NE: /^\+227\d{8}$/,
+    NG: /^\+234\d{10}$/, SN: /^\+221\d{9}$/, SL: /^\+232\d{8}$/, TG: /^\+228\d{8}$/
+  };
+  return patterns[country] ? patterns[country].test(phone) : false;
+}
+
+// BASCULER ENTRE CONNEXION / INSCRIPTION
+function toggleForm(){
+  isSignup = !isSignup;
+  document.getElementById('formTitle').innerText = isSignup ? "Créer un compte" : "Connexion";
+  document.getElementById('actionButton').innerText = isSignup ? "S'inscrire" : "Se connecter";
+  document.getElementById('phone').style.display = isSignup ? "block" : "none";
+  document.getElementById('country').style.display = isSignup ? "block" : "none";
+  document.getElementById('referral').style.display = isSignup ? "block" : "none";
+  document.getElementById('toggleText').innerHTML = isSignup 
+    ? 'Déjà un compte ? <a onclick="toggleForm()">Se connecter</a>' 
+    : 'Pas encore de compte ? <a onclick="toggleForm()">Créer un compte</a>';
+  document.getElementById('error').innerText = '';
+  document.getElementById('success').innerText = '';
+}
+
+// LOGIN / INSCRIPTION
+function login(){
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const phone = document.getElementById('phone').value.trim();
+  const country = document.getElementById('country').value;
+  const referral = document.getElementById('referral').value.trim();
+  const errorEl = document.getElementById('error');
+  const successEl = document.getElementById('success');
+  errorEl.innerText = '';
+  successEl.innerText = '';
+
+  if(!email || !password){
+    errorEl.innerText = "Email et mot de passe requis.";
+    return;
+  }
+  if(!isValidEmail(email)){
+    errorEl.innerText = "Veuillez entrer un email valide.";
+    return;
+  }
+  if(password.length < 6){
+    errorEl.innerText = "Le mot de passe doit contenir au moins 6 caractères.";
+    return;
+  }
+  if(isSignup && phone && !isValidPhoneByCountry(phone, country)){
+    errorEl.innerText = "Veuillez entrer un numéro de téléphone valide pour le pays choisi.";
+    return;
+  }
+
+  if(isSignup){
+    if(users.find(u => u.email === email)){
+      errorEl.innerText = "Cet email est déjà utilisé.";
+      return;
+    }
+    if(referral){
+      const refUser = users.find(u => u.email === referral);
+      if(refUser) refUser.balance += 1500;
+    }
+    users.push({email, password, phone: phone || '', country: country || '', balance:0});
+    localStorage.setItem('users', JSON.stringify(users)); // ✅ Sauvegarde immédiate
+    successEl.innerText = "Compte créé avec succès ! Vous pouvez maintenant vous connecter.";
+    setTimeout(()=>{ toggleForm(); }, 1500);
+  } else {
+    const user = users.find(u => u.email === email && u.password === password);
+    if(user){
+      successEl.innerText = "Connexion réussie ! Redirection...";
+      localStorage.setItem('loggedInUser', email);
+      localStorage.setItem('users', JSON.stringify(users)); 
+      setTimeout(()=>{ window.location.href = 'index2.html'; }, 1500);
+    } else {
+      errorEl.innerText = "Email ou mot de passe incorrect.";
+    }
+  }
+}
+
+// LOGOS FLOTTANTS
+function createFloatingLogos(){
+  const bg = document.getElementById('background');
+  for(let i=0; i<30; i++){
+    const svgNS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNS,"svg");
+    svg.setAttribute("class","logo");
+    svg.style.left = Math.random()*100 + "vw";
+    svg.style.animationDuration = (5 + Math.random()*10) + "s";
+    svg.innerHTML = `<circle cx="20" cy="20" r="15"/>`;
+    bg.appendChild(svg);
+  }
+}
+createFloatingLogos();
+</script>
+
+</body>
+</html>
