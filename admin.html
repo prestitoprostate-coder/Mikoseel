@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - Mikosell Pro</title>
+<style>
+body { font-family:'Poppins',sans-serif; background:#1a1a2e; color:#fff; padding:20px; }
+h2 { color:#ffcc00; margin-bottom:20px; text-align:center; }
+.table { width:100%; border-collapse: collapse; margin-top:20px; }
+.table th, .table td { border:1px solid #fff; padding:10px; text-align:center; }
+.button-approve { padding:5px 10px; background:#00ff99; border:none; border-radius:5px; cursor:pointer; }
+.button-approve:hover { background:#00cc66; }
+.status-pending { color:#ffcc00; }
+.status-approved { color:#00ff99; }
+</style>
+</head>
+<body>
+<h2>Admin - Gestion des Dépôts</h2>
+
+<table class="table" id="depositsTable">
+  <thead>
+    <tr>
+      <th>Montant</th>
+      <th>Téléphone</th>
+      <th>Réseau</th>
+      <th>Message</th>
+      <th>Utilisateur</th>
+      <th>Date</th>
+      <th>Statut</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Les dépôts apparaîtront ici -->
+  </tbody>
+</table>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBKyAIcBC8tpWWaYgE_NeZEWJn8AEoyDLQ",
+  authDomain: "valide-28624.firebaseapp.com",
+  projectId: "valide-28624",
+  storageBucket: "valide-28624.firebasestorage.app",
+  messagingSenderId: "483447990733",
+  appId: "1:483447990733:web:ee5b850dc31cbb8776bc84",
+  measurementId: "G-BSZJ5PW639"
+};
+firebase.initializeApp(firebaseConfig);
+const analytics = firebase.analytics();
+const db = firebase.firestore();
+
+// Fonction pour afficher tous les dépôts
+function loadDeposits() {
+  const tableBody = document.getElementById('depositsTable').querySelector('tbody');
+  tableBody.innerHTML = '';
+
+  db.collection("deposits").orderBy('date', 'desc').onSnapshot(snapshot => {
+    tableBody.innerHTML = '';
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const date = data.date ? data.date.toDate().toLocaleString() : '';
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${data.amount}</td>
+        <td>${data.phone}</td>
+        <td>${data.network}</td>
+        <td>${data.message}</td>
+        <td>${data.userEmail}</td>
+        <td>${date}</td>
+        <td class="${data.status==='pending'?'status-pending':'status-approved'}">${data.status}</td>
+        <td>${data.status==='pending'?`<button class="button-approve" onclick="approveDeposit('${doc.id}')">Approuver</button>`:''}</td>
+      `;
+      tableBody.appendChild(tr);
+    });
+  });
+}
+
+// Fonction pour approuver un dépôt
+function approveDeposit(id) {
+  db.collection("deposits").doc(id).update({
+    status: "approved"
+  }).then(() => {
+    alert('Dépôt approuvé !');
+  }).catch(err => {
+    console.error(err);
+    alert('Erreur lors de l’approbation.');
+  });
+}
+
+// Charger les dépôts au démarrage
+loadDeposits();
+</script>
+</body>
+</html>
