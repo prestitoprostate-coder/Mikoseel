@@ -140,19 +140,18 @@ a { color: #ff7f50; text-decoration: none; cursor: pointer; }
 <!-- Firebase Script -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js";
 import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-database.js";
 
-// ✅ Ton projet Firebase
+// Configuration Firebase pour le projet "Valide"
 const firebaseConfig = {
   apiKey: "AIzaSyBKyAIcBC8tpWWaYgE_NeZEWJn8AEoyDLQ",
   authDomain: "valide-28624.firebaseapp.com",
   databaseURL: "https://valide-28624-default-rtdb.firebaseio.com",
   projectId: "valide-28624",
-  storageBucket: "valide-28624.firebasestorage.app",
+  storageBucket: "valide-28624.appspot.com", // ✅ corrigé
   messagingSenderId: "483447990733",
-  appId: "1:483447990733:web:ee5b850dc31cbb8776bc84",
-  measurementId: "G-BSZJ5PW639"
+  appId: "1:483447990733:web:ee5b850dc31cbb8776bc84"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -161,17 +160,15 @@ const db = getDatabase(app);
 
 let isSignup = false;
 
-// Basculer entre connexion / inscription
+// Toggle connexion/inscription
 document.getElementById("toggleLink").addEventListener("click", () => {
   isSignup = !isSignup;
   document.getElementById("formTitle").innerText = isSignup ? "Créer un compte" : "Connexion";
   document.getElementById("actionButton").innerText = isSignup ? "S'inscrire" : "Se connecter";
-  document.getElementById("toggleText").innerHTML = isSignup 
-    ? 'Déjà un compte ? <a id="toggleLink">Se connecter</a>'
-    : 'Pas encore de compte ? <a id="toggleLink">Créer un compte</a>';
+  document.getElementById("toggleLink").innerText = isSignup ? "Se connecter" : "Créer un compte";
 });
 
-// Connexion ou inscription
+// Connexion / Inscription
 document.getElementById("actionButton").addEventListener("click", async () => {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
@@ -187,14 +184,10 @@ document.getElementById("actionButton").addEventListener("click", async () => {
 
   try {
     if (isSignup) {
-      // 🔹 Inscription Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      // Enregistrer dans la base pour l’admin
-      await set(ref(db, "users/" + user.uid), { email });
+      await set(ref(db, "users/" + userCredential.user.uid), { email });
       successEl.innerText = "Compte créé avec succès !";
     } else {
-      // 🔹 Connexion
       await signInWithEmailAndPassword(auth, email, password);
       successEl.innerText = "Connexion réussie ! Redirection...";
       setTimeout(() => window.location.href = "index2.html", 1000);
@@ -204,7 +197,7 @@ document.getElementById("actionButton").addEventListener("click", async () => {
   }
 });
 
-// Vérifier si un utilisateur est déjà connecté
+// Redirection si déjà connecté
 onAuthStateChanged(auth, (user) => {
   if (user) {
     document.getElementById("success").innerText = `Bienvenue ${user.email} ! Redirection...`;
