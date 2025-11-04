@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EuroMoney - Connexion</title>
+<style>
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', sans-serif;
+  background: radial-gradient(circle at top, #1a1a2e, #0f0f1a);
+  color: #fff;
+  overflow-x: hidden;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 40px;
+}
+#background {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  overflow: hidden;
+  z-index: 0;
+}
+.logo {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  fill: rgba(255,127,80,0.5);
+  animation: float linear infinite;
+}
+@keyframes float {
+  0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+}
+#intro {
+  text-align: center;
+  padding: 20px;
+  font-size: 16px;
+  line-height: 1.5;
+  max-width: 600px;
+  margin-bottom: 20px;
+  animation: slideIn 2s ease-out;
+  z-index: 1;
+}
+#intro h2 { color: #ff7f50; }
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-50px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.container {
+  background: rgba(255,255,255,0.05);
+  padding: 40px;
+  border-radius: 20px;
+  width: 350px;
+  box-shadow: 0 0 20px rgba(255,127,80,0.3);
+  text-align: center;
+  z-index: 1;
+}
+h2 { color: #ff7f50; margin-bottom: 20px; }
+input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  margin-bottom: 15px;
+  font-size: 16px;
+  background: #1a1a2f;
+  color: #fff;
+  outline: none;
+  text-align: center;
+}
+button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: #ff7f50;
+  color: #0d0d1f;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+  font-size: 16px;
+}
+button:hover {
+  background: #ff9966;
+  transform: scale(1.03);
+}
+#error { color: #ff4d4d; margin-bottom: 10px; }
+#success { color: #00ff99; margin-bottom: 10px; }
+p { font-size: 14px; margin-top: 10px; }
+a { color: #ff7f50; text-decoration: none; cursor: pointer; }
+#terms {
+  max-width: 600px;
+  margin: 30px auto 40px;
+  font-size: 12px;
+  color: #ccc;
+  background: rgba(255,255,255,0.05);
+  padding: 15px;
+  border-radius: 10px;
+  text-align: center;
+  z-index: 1;
+}
+</style>
+</head>
+<body>
+
+<div id="background"></div>
+
+<div id="intro">
+  <h2>Bienvenue sur Mikoseel EuroMoney</h2>
+  <p>Connectez-vous ou créez un compte pour accéder à votre espace.<br>
+  Suivez vos investissements, vos gains et vos retraits.<br>
+  Sécurisé, rapide et facile à utiliser.</p>
+</div>
+
+<div class="container">
+  <h2 id="formTitle">Connexion</h2>
+  <div id="error"></div>
+  <div id="success"></div>
+
+  <input type="email" id="email" placeholder="Adresse email">
+  <input type="password" id="password" placeholder="Mot de passe">
+
+  <button id="actionButton">Se connecter</button>
+  <p id="toggleText">Pas encore de compte ? <a id="toggleLink">Créer un compte</a></p>
+</div>
+
+<div id="terms">
+  <h3>Conditions d’utilisation</h3>
+  <p>En utilisant Mikoseel EuroMoney, vous acceptez nos conditions générales.<br>
+  Vos données sont sécurisées et utilisées uniquement pour votre compte.</p>
+</div>
+
+<!-- Firebase Script -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js";
+import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-database.js";
+
+// ✅ Ton projet Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyBKyAIcBC8tpWWaYgE_NeZEWJn8AEoyDLQ",
+  authDomain: "valide-28624.firebaseapp.com",
+  databaseURL: "https://valide-28624-default-rtdb.firebaseio.com",
+  projectId: "valide-28624",
+  storageBucket: "valide-28624.firebasestorage.app",
+  messagingSenderId: "483447990733",
+  appId: "1:483447990733:web:ee5b850dc31cbb8776bc84",
+  measurementId: "G-BSZJ5PW639"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+let isSignup = false;
+
+// Basculer entre connexion / inscription
+document.getElementById("toggleLink").addEventListener("click", () => {
+  isSignup = !isSignup;
+  document.getElementById("formTitle").innerText = isSignup ? "Créer un compte" : "Connexion";
+  document.getElementById("actionButton").innerText = isSignup ? "S'inscrire" : "Se connecter";
+  document.getElementById("toggleText").innerHTML = isSignup 
+    ? 'Déjà un compte ? <a id="toggleLink">Se connecter</a>'
+    : 'Pas encore de compte ? <a id="toggleLink">Créer un compte</a>';
+});
+
+// Connexion ou inscription
+document.getElementById("actionButton").addEventListener("click", async () => {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const errorEl = document.getElementById("error");
+  const successEl = document.getElementById("success");
+  errorEl.innerText = "";
+  successEl.innerText = "";
+
+  if (!email || !password) {
+    errorEl.innerText = "Veuillez remplir tous les champs.";
+    return;
+  }
+
+  try {
+    if (isSignup) {
+      // 🔹 Inscription Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      // Enregistrer dans la base pour l’admin
+      await set(ref(db, "users/" + user.uid), { email });
+      successEl.innerText = "Compte créé avec succès !";
+    } else {
+      // 🔹 Connexion
+      await signInWithEmailAndPassword(auth, email, password);
+      successEl.innerText = "Connexion réussie ! Redirection...";
+      setTimeout(() => window.location.href = "index2.html", 1000);
+    }
+  } catch (err) {
+    errorEl.innerText = err.message;
+  }
+});
+
+// Vérifier si un utilisateur est déjà connecté
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    document.getElementById("success").innerText = `Bienvenue ${user.email} ! Redirection...`;
+    setTimeout(() => window.location.href = "index2.html", 1000);
+  }
+});
+
+// Bulles animées
+function createFloatingLogos(){
+  const bg = document.getElementById('background');
+  for(let i=0; i<30; i++){
+    const svgNS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNS,"svg");
+    svg.setAttribute("class","logo");
+    svg.style.left = Math.random()*100 + "vw";
+    svg.style.animationDuration = (5 + Math.random()*10) + "s";
+    svg.innerHTML = `<circle cx="20" cy="20" r="15"/>`;
+    bg.appendChild(svg);
+  }
+}
+createFloatingLogos();
+</script>
+
+<!-- Lien info -->
+<a href="info.html" style="position:fixed; bottom:5px; left:50%; transform:translateX(-50%);
+font-size:10px; color:#ff7f50; text-decoration:none; z-index:1000;">Info</a>
+
+</body>
+</html>
