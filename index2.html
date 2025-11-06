@@ -6,19 +6,16 @@
 <title>EuroMoney Mikoseel- Tableau de bord</title>
 
 <style>
-
-
-
+/* ======= Ton CSS existant ======= */
 #bubbles {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  pointer-events: none; /* pour ne pas gêner les clics */
+  pointer-events: none;
   z-index: -1;
 }
-
 .bubble {
   position: absolute;
   border-radius: 50%;
@@ -26,14 +23,11 @@
   background: radial-gradient(circle, #ff7f50 0%, transparent 70%);
   animation: float linear infinite;
 }
-
 @keyframes float {
   0% { transform: translateY(100vh) rotate(0deg); opacity:0; }
   50% { opacity:0.5; }
   100% { transform: translateY(-100px) rotate(360deg); opacity:0; }
 }
-
-
 body {
   margin:0;
   font-family:'Poppins',sans-serif;
@@ -41,8 +35,6 @@ body {
   color:#fff;
   overflow-x:hidden;
 }
-
-/* Effet bulles animées */
 body::before, body::after {
   content:'';
   position:fixed;
@@ -57,8 +49,6 @@ body::before, body::after {
   from {transform:translateY(0);}
   to {transform:translateY(-50px);}
 }
-
-/* Barre du haut */
 .top-bar{
   display:flex;
   justify-content:space-between;
@@ -82,8 +72,6 @@ body::before, body::after {
   cursor:pointer;
 }
 .top-bar button:hover{background:#ff9955;transform:scale(1.05);}
-
-/* Onglets */
 .tabs-container{
   display:flex;
   justify-content:center;
@@ -104,8 +92,6 @@ body::before, body::after {
   cursor:pointer;
 }
 .tab-btn.active,.tab-btn:hover{background:#ff7f50;color:#0d0d1f;}
-
-/* Sections */
 .section{display:none;padding:30px 20px;max-width:1200px;margin:0 auto;gap:30px;flex-direction:column;}
 .section.active{display:flex;flex-direction:column;gap:30px;}
 .card{
@@ -120,7 +106,6 @@ body::before, body::after {
 .card.visible{opacity:1;transform:translateY(0);}
 .card h2{color:#ff7f50;margin-bottom:15px;}
 .card p{color:#ccc;font-size:14px;line-height:1.5;}
-
 .balance-amount{
   font-size:100px;
   font-weight:900;
@@ -129,8 +114,6 @@ body::before, body::after {
   text-align:center;
   line-height:1.1;
 }
-
-/* Grilles */
 .points-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;}
 .machine-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;}
 .machine-card{
@@ -161,35 +144,30 @@ body::before, body::after {
 .invest-table th{background:#11112a;color:#ff7f50;}
 .invest-table tr:nth-child(even){background:#12122a;}
 .invest-table tr:hover{background:#22223a;}
+.fictif-graph{
+  height:300px;
+  border:2px dashed #ff7f50;
+  border-radius:15px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#ff7f50;
+  font-weight:bold;
+  font-size:18px;
+}
 @media(max-width:900px){
   .tabs-container{flex-wrap:wrap;gap:10px;}
   .balance-amount{font-size:60px;}
 }
 </style>
 </head>
-
 <body>
-
-<body>
-  <div id="bubbles"></div>
-  <!-- ton reste de tableau de bord ici -->
-
-<!-- Vérification de connexion -->
-<script>
-if (!localStorage.getItem('loggedInUser')) {
-  window.location.href = 'login.html';
-}
-window.addEventListener('pageshow', function(event) {
-  if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
-    if (!localStorage.getItem('loggedInUser')) window.location.href = 'login.html';
-  }
-});
-</script>
+<div id="bubbles"></div>
 
 <!-- Barre supérieure -->
 <div class="top-bar">
   <div class="logo">EuroMikoseel</div>
-  <button onclick="logout()">Déconnexion</button>
+  <button id="logoutBtn">Déconnexion</button>
 </div>
 
 <!-- Onglets -->
@@ -207,8 +185,8 @@ window.addEventListener('pageshow', function(event) {
     <small>Montant disponible pour retrait après 14 jours</small>
   </div>
   <div class="card visible">
-    <h2>Évolution du Solde</h2>
-    <canvas id="balanceChart" style="height:300px;"></canvas>
+    <h2>Évolution du Solde <h2>
+    <div class="fictif-graph">Graphique(Bientôt)</div>
   </div>
   <div class="points-grid" id="points-grid"></div>
 </div>
@@ -234,14 +212,55 @@ window.addEventListener('pageshow', function(event) {
   </div>
 </div>
 
-<!-- Scripts -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-database.js";
+
+// Config Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyBKyAIcBC8tpWWaYgE_NeZEWJn8AEoyDLQ",
+  authDomain: "valide-28624.firebaseapp.com",
+  databaseURL: "https://valide-28624-default-rtdb.firebaseio.com",
+  projectId: "valide-28624",
+  storageBucket: "valide-28624.appspot.com",
+  messagingSenderId: "483447990733",
+  appId: "1:483447990733:web:ee5b850dc31cbb8776bc84"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+// Vérification connexion Firebase
+onAuthStateChanged(auth, async user=>{
+  if(!user){
+    window.location.href = "login.html";
+    return;
+  }
+  localStorage.setItem('loggedInUser', user.email);
+
+  // Solde fictif ou réel depuis Firebase
+  const snapshot = await get(ref(db,"users/"+user.uid+"/balance"));
+  const balance = snapshot.val() || 0;
+  document.getElementById('balance-amount').textContent = balance.toLocaleString()+' FCFA';
+
+  // Historique fictif ou réel
+  const historySnap = await get(ref(db,"users/"+user.uid+"/history"));
+  const history = historySnap.val() || [];
+  const historyBody = document.getElementById('history-body');
+  history.forEach((tx)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${tx.date||'xx/xx/xxxx'}</td><td>${tx.machine||'Machine X'}</td><td>${(tx.amount||0).toLocaleString()}</td><td>${(tx.gain||0).toLocaleString()}</td>`;
+    historyBody.appendChild(tr);
+  });
+});
+
 // Déconnexion
-function logout(){
+document.getElementById('logoutBtn').addEventListener('click', async ()=>{
+  await signOut(auth);
   localStorage.clear();
-  window.location.href = 'login.html';
-}
+  window.location.href="login.html";
+});
 
 // Onglets
 const tabs=document.querySelectorAll('.tab-btn');
@@ -295,95 +314,27 @@ machines.forEach(m=>{
     Gains/12h: ${m.gain12h.toLocaleString()} FCFA</p>
     <button>Investir</button>`;
   machineContainer.appendChild(card);
-
   card.querySelector('button').addEventListener('click',()=>{
     window.location.href = 'deposit.html';
   });
 });
 
-// Récupération utilisateur et historique
-const loggedInUser = localStorage.getItem('loggedInUser');
-let users = JSON.parse(localStorage.getItem('users')) || [];
-const currentUser = users.find(u => u.email === loggedInUser) || {balance:0, history:[]};
-
-// Animation solde
-const balanceEl=document.getElementById('balance-amount');
-function animateBalance(target){
-  let current=parseInt(balanceEl.textContent.replace(/\D/g,''))||0;
-  const steps=60;
-  const increment=(target-current)/steps;
-  let i=0;
-  const interval=setInterval(()=>{
-    i++;
-    current+=increment;
-    balanceEl.textContent=Math.floor(current).toLocaleString()+' FCFA';
-    if(i>=steps) clearInterval(interval);
-  },30);
-}
-animateBalance(currentUser.balance);
-
-// Historique et graphique
-const historyBody = document.getElementById('history-body');
-let chartLabels = [];
-let chartData = [];
-let runningBalance = 0;
-if(currentUser.history && currentUser.history.length){
-  currentUser.history.forEach((tx,index)=>{
-    runningBalance += tx.amount + (tx.gain || 0);
-    chartLabels.push(`Jour ${index+1}`);
-    chartData.push(runningBalance);
-
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${tx.date}</td><td>${tx.machine||'-'}</td><td>${tx.amount.toLocaleString()}</td><td>${(tx.gain || 0).toLocaleString()}</td>`;
-    historyBody.appendChild(tr);
-  });
-}
-
-// Graphique solde
-const ctx=document.getElementById('balanceChart').getContext('2d');
-const balanceChart=new Chart(ctx,{
-  type:'line',
-  data:{
-    labels: chartLabels.length ? chartLabels : Array.from({length:15},(_,i)=>`Jour ${i+1}`),
-    datasets:[{
-      label:'Solde FCFA',
-      data: chartData.length ? chartData : Array(15).fill(currentUser.balance || 0),
-      backgroundColor:'rgba(255,127,80,0.2)',
-      borderColor:'#ff7f50',
-      borderWidth:2,
-      tension:0.3,
-      fill:true,
-      pointRadius:5
-    }]
-  },
-  options:{
-    responsive:true,
-    plugins:{legend:{display:false}},
-    scales:{y:{beginAtZero:true},x:{grid:{display:false}}}
-  }
-});
-</script>
-
-<script>
+// Animation bulles
 function createBubbles(num=30){
   const container = document.getElementById('bubbles');
   for(let i=0;i<num;i++){
     const bubble = document.createElement('div');
     bubble.className = 'bubble';
-    
-    const size = Math.random() * 50 + 30; // taille 30px à 80px
+    const size = Math.random() * 50 + 30;
     bubble.style.width = size + 'px';
     bubble.style.height = size + 'px';
-    
     bubble.style.left = Math.random() * 100 + 'vw';
     bubble.style.animationDuration = (8 + Math.random()*12) + 's';
-    
     container.appendChild(bubble);
   }
 }
 createBubbles();
 </script>
 
-</script>
 </body>
 </html>
