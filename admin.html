@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ancienne version- Mikosell Pro</title>
+<title>Admin - Mikosell Pro</title>
 <style>
 body { font-family: Arial,sans-serif; background:#0d0d1f; color:#fff; margin:0; padding:20px; }
 h2 { color:#ff7f50; text-align:center; margin-bottom:20px; }
@@ -25,9 +25,8 @@ button:hover { transform:scale(1.05); }
 </head>
 <body>
 
-<h2>Ancienne version obsolète - Mikosell Pro</h2>
+<h2>Admin - Mikosell Pro</h2>
 
-<!-- Section Connexion -->
 <div id="loginDiv">
   <input type="text" id="adminUser" placeholder="Utilisateur">
   <input type="password" id="adminPass" placeholder="Mot de passe">
@@ -35,25 +34,20 @@ button:hover { transform:scale(1.05); }
   <div id="loginError"></div>
 </div>
 
-<!-- Section Admin -->
 <div id="adminDiv" class="container">
-
   <div class="section" id="depositSection">
     <h3>Dépôts en attente</h3>
   </div>
-
   <div class="section" id="withdrawSection">
     <h3>Retraits en attente</h3>
   </div>
-
 </div>
 
-<!-- Firebase et Script -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
-import { getDatabase, ref, update, get, child } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-database.js";
+import { getDatabase, ref, onValue, remove, get, update, push } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-database.js";
 
-// Config Firebase
+// ===== Firebase Config =====
 const firebaseConfig = {
   apiKey: "AIzaSyBKyAIcBC8tpWWaYgE_NeZEWJn8AEoyDLQ",
   authDomain: "valide-28624.firebaseapp.com",
@@ -66,26 +60,51 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// Déclarer la fonction de connexion globalement
-window.loginAdmin = function(){
+// ===== Login Admin =====
+window.loginAdmin = function() {
   const user = document.getElementById("adminUser").value;
   const pass = document.getElementById("adminPass").value;
-  if(user==="Mikoseel" && pass==="Dada12da12"){
+  if(user === "Mikoseel" && pass === "Dada12da12"){
     document.getElementById("loginDiv").style.display="none";
     document.getElementById("adminDiv").style.display="block";
-    renderDeposits();
-    renderWithdraws();
+    loadDeposits();
+    loadWithdraws();
   } else {
     document.getElementById("loginError").innerText="Identifiant ou mot de passe incorrect.";
   }
+};
+
+// ===== Récupération Dépôts =====
+function loadDeposits(){
+  const depRef = ref(db, 'pendingDeposits');
+  onValue(depRef, snapshot => {
+    const deposits = [];
+    snapshot.forEach(userSnap => {
+      const uid = userSnap.key;
+      userSnap.forEach(depSnap => {
+        deposits.push({ ...depSnap.val(), uid, depositId: depSnap.key });
+      });
+    });
+    renderDeposits(deposits);
+  });
 }
 
-// Données locales (simulation)
-let users = JSON.parse(localStorage.getItem('users')) || [];
-let pendingDeposits = JSON.parse(localStorage.getItem('pendingDeposits')) || [];
-let pendingWithdraws = JSON.parse(localStorage.getItem('pendingWithdraws')) || [];
-let history = JSON.parse(localStorage.getItem('history')) || [];
+// ===== Récupération Retraits =====
+function loadWithdraws(){
+  const wdrRef = ref(db, 'pendingWithdraws');
+  onValue(wdrRef, snapshot => {
+    const withdraws = [];
+    snapshot.forEach(userSnap => {
+      const uid = userSnap.key;
+      userSnap.forEach(wdrSnap => {
+        withdraws.push({ ...wdrSnap.val(), uid, withdrawId: wdrSnap.key });
+      });
+    });
+    renderWithdraws(withdraws);
+  });
+}
 
+// ===== Machines =====
 const machines = [
   {name:"Bronze", min:2000, max:5000, gain12h:250},
   {name:"Silver", min:5001, max:20000, gain12h:900},
@@ -93,7 +112,7 @@ const machines = [
   {name:"Diamond", min:50001, max:100000, gain12h:12000}
 ];
 
-// Copier le texte
+// ===== Fonctions =====
 function copyText(id){
   const textArea = document.getElementById(id);
   textArea.select();
@@ -101,79 +120,64 @@ function copyText(id){
   alert("Message copié !");
 }
 
-// Approuver un dépôt et mettre à jour Firebase
-window.approveDeposit = function(index){
-  const deposit = pendingDeposits[index];
-  const user = users.find(u => u.email === deposit.email);
-  if(!user) return;
+// Approuver dépôt
+window.approveDeposit = async function(index){
+  const deposit = currentDeposits[index];
+  if(!deposit) return;
+  try {
+    const userRef = ref(db, 'users/' + deposit.uid);
+    const userSnap = await get(userRef);
+    const balance = userSnap.val()?.balance || 0;
+    await update(userRef, { balance: balance + deposit.amount });
 
-  const machine = machines.find(m => deposit.amount >= m.min && deposit.amount <= m.max);
-  if(!machine){
-    alert("Montant hors plage des machines disponibles !");
-    return;
-  }
-
-  user.balance = (user.balance || 0) + deposit.amount;
-
-  history.push({
-    email: user.email,
-    date: new Date().toLocaleString(),
-    type: 'Dépôt',
-    amount: deposit.amount,
-    gain: machine.gain12h,
-    machine: machine.name,
-    message: deposit.message
-  });
-
-  // Mise à jour Firebase
-  update(ref(db, 'users/' + user.email.replace('.',',')), { balance: user.balance })
-    .then(() => console.log("Balance mise à jour dans Firebase"));
-
-  pendingDeposits.splice(index,1);
-
-  localStorage.setItem('history', JSON.stringify(history));
-  localStorage.setItem('users', JSON.stringify(users));
-  localStorage.setItem('pendingDeposits', JSON.stringify(pendingDeposits));
-
-  renderDeposits();
-}
-
-// Approuver un retrait
-window.approveWithdraw = function(index){
-  const withdraw = pendingWithdraws[index];
-  const user = users.find(u => u.email === withdraw.email);
-  if(user && user.balance >= withdraw.amount){
-    user.balance -= withdraw.amount;
-
-    history.push({
-      email: user.email,
-      date: new Date().toLocaleString(),
-      type: 'Retrait',
-      amount: withdraw.amount,
-      gain: 0,
-      message: withdraw.message || ""
+    const histRef = ref(db, `users/${deposit.uid}/history`);
+    await push(histRef, {
+      date: deposit.date,
+      amount: deposit.amount,
+      message: deposit.message,
+      type: 'Dépôt'
     });
 
-    pendingWithdraws.splice(index,1);
-
-    localStorage.setItem('history', JSON.stringify(history));
-    localStorage.setItem('users', JSON.stringify(users));
-    localStorage.setItem('pendingWithdraws', JSON.stringify(pendingWithdraws));
-
-    renderWithdraws();
-  } else {
-    alert("Solde insuffisant pour ce retrait !");
+    await remove(ref(db, `pendingDeposits/${deposit.uid}/${deposit.depositId}`));
+    alert("Dépôt approuvé !");
+  } catch(err){
+    alert("Erreur : " + err.message);
   }
 }
 
-// Afficher les dépôts
-function renderDeposits(){
+// Approuver retrait
+window.approveWithdraw = async function(index){
+  const withdraw = currentWithdraws[index];
+  if(!withdraw) return;
+  try {
+    const userRef = ref(db, 'users/' + withdraw.uid);
+    const userSnap = await get(userRef);
+    const balance = userSnap.val()?.balance || 0;
+    if(balance < withdraw.amount){ alert("Solde insuffisant !"); return; }
+    await update(userRef, { balance: balance - withdraw.amount });
+
+    const histRef = ref(db, `users/${withdraw.uid}/history`);
+    await push(histRef, {
+      date: withdraw.date,
+      amount: withdraw.amount,
+      message: withdraw.message || "",
+      type: 'Retrait'
+    });
+
+    await remove(ref(db, `pendingWithdraws/${withdraw.uid}/${withdraw.withdrawId}`));
+    alert("Retrait approuvé !");
+  } catch(err){
+    alert("Erreur : " + err.message);
+  }
+}
+
+let currentDeposits = [];
+function renderDeposits(deposits){
+  currentDeposits = deposits;
   const section = document.getElementById('depositSection');
   section.innerHTML = '<h3>Dépôts en attente</h3>';
-  if(pendingDeposits.length === 0){
-    section.innerHTML += "<p>Aucune demande de dépôt en attente.</p>";
-  }
-  pendingDeposits.forEach((d, i) => {
+  if(deposits.length === 0){ section.innerHTML += "<p>Aucune demande de dépôt en attente.</p>"; return; }
+  deposits.forEach((d,i)=>{
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
@@ -193,14 +197,13 @@ function renderDeposits(){
   });
 }
 
-// Afficher les retraits
-function renderWithdraws(){
+let currentWithdraws = [];
+function renderWithdraws(withdraws){
+  currentWithdraws = withdraws;
   const section = document.getElementById('withdrawSection');
   section.innerHTML = '<h3>Retraits en attente</h3>';
-  if(pendingWithdraws.length === 0){
-    section.innerHTML += "<p>Aucune demande de retrait en attente.</p>";
-  }
-  pendingWithdraws.forEach((w, i) => {
+  if(withdraws.length === 0){ section.innerHTML += "<p>Aucune demande de retrait en attente.</p>"; return; }
+  withdraws.forEach((w,i)=>{
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
@@ -218,7 +221,6 @@ function renderWithdraws(){
     section.appendChild(card);
   });
 }
-
 </script>
 </body>
 </html>
