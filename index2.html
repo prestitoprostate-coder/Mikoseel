@@ -232,27 +232,30 @@ const auth = getAuth(app);
 const db = getDatabase(app);
 
 // Vérification connexion Firebase
-onAuthStateChanged(auth, async user=>{
+onAuthStateChanged(auth, user => {
   if(!user){
-    window.location.href = "index.html";
+    window.location.href = "index.html"; // Redirige vers login si pas connecté
     return;
   }
-  localStorage.setItem('loggedInUser', user.email);
 
-  // Solde fictif ou réel depuis Firebase
-  const snapshot = await get(ref(db,"users/"+user.uid+"/balance"));
-  const balance = snapshot.val() || 0;
-  document.getElementById('balance-amount').textContent = balance.toLocaleString()+' FCFA';
-
-  // Historique fictif ou réel
-  const historySnap = await get(ref(db,"users/"+user.uid+"/history"));
-  const history = historySnap.val() || [];
-  const historyBody = document.getElementById('history-body');
-  history.forEach((tx)=>{
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${tx.date||'xx/xx/xxxx'}</td><td>${tx.machine||'Machine X'}</td><td>${(tx.amount||0).toLocaleString()}</td><td>${(tx.gain||0).toLocaleString()}</td>`;
-    historyBody.appendChild(tr);
+  // Solde en temps réel
+  const balanceRef = ref(db, "users/" + user.uid + "/balance");
+  onValue(balanceRef, snapshot => {
+    const balance = snapshot.val() || 0;
+    document.getElementById('balance-amount').textContent = balance.toLocaleString() + ' FCFA';
   });
+
+  // Historique en temps réel
+  const historyRef = ref(db, "users/" + user.uid + "/history");
+  const historyBody = document.getElementById('history-body');
+  onValue(historyRef, snapshot => {
+    historyBody.innerHTML = '';
+    const history = snapshot.val() || {};
+    Object.values(history).forEach(tx => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${tx.date}</td><td>${tx.machine||'-'}</td><td>${(tx.amount||0).toLocaleString()}</td><td>${(tx.gain||0).toLocaleString()}</td>`;
+      historyBody.appendChild(tr);
+    });
 });
 
 // Déconnexion
