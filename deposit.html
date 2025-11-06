@@ -5,21 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dépôt & Retrait - Mikosell Pro</title>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
 <style>
-
-
-
-
 #bubbles {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none; /* pour ne pas gêner les clics */
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
   z-index: -1;
 }
-
 .bubble {
   position: absolute;
   border-radius: 50%;
@@ -27,7 +21,6 @@
   background: radial-gradient(circle, #ff7f50 0%, transparent 70%);
   animation: float linear infinite;
 }
-
 @keyframes float {
   0% { transform: translateY(100vh) rotate(0deg); opacity:0; }
   50% { opacity:0.5; }
@@ -46,65 +39,37 @@ body {
   border-radius:20px;
   padding:20px;
 }
-.tabs {
-  display:flex;
-  margin-bottom:20px;
-}
+.tabs { display:flex; margin-bottom:20px; }
 .tab {
-  flex:1;
-  text-align:center;
-  padding:10px;
-  cursor:pointer;
-  border-radius:10px;
-  background:#12122a;
-  margin-right:5px;
+  flex:1; text-align:center; padding:10px; cursor:pointer;
+  border-radius:10px; background:#12122a; margin-right:5px;
 }
 .tab.active { background:#ff7f50; font-weight:bold; color:#0d0d1f; }
 .tab-content { display:none; }
 .tab-content.active { display:block; }
 input, select, textarea {
-  width:100%;
-  padding:12px;
-  margin-bottom:12px;
-  border-radius:12px;
-  border:none;
-  background:#12122a;
-  color:#fff;
-  font-size:16px;
+  width:100%; padding:12px; margin-bottom:12px;
+  border-radius:12px; border:none; background:#12122a;
+  color:#fff; font-size:16px;
 }
 textarea { resize:none; }
 button {
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:12px;
-  background:#ff7f50;
-  color:#0d0d1f;
-  font-weight:700;
-  cursor:pointer;
-  font-size:16px;
-  transition:0.3s;
-  margin-bottom:10px;
+  width:100%; padding:12px; border:none; border-radius:12px;
+  background:#ff7f50; color:#0d0d1f; font-weight:700;
+  cursor:pointer; font-size:16px; transition:0.3s; margin-bottom:10px;
 }
 button:hover { transform:scale(1.05); }
 #error, #success, #ussd, #errorRetrait, #successRetrait {
-  text-align:center;
-  margin-bottom:10px;
+  text-align:center; margin-bottom:10px;
 }
 #error, #errorRetrait { color:#ff4d4d; }
 #success, #successRetrait { color:#00ff99; }
 #ussd { color:#ffcc00; }
 </style>
 </head>
+
 <body>
-<body>
-  <div id="bubbles"></div>
-  <!-- ton reste de tableau de bord ici -->
-<script>
-// Vérification connexion
-const loggedInUser = localStorage.getItem('loggedInUser');
-if(!loggedInUser){ window.location.href='index.html'; }
-</script>
+<div id="bubbles"></div>
 
 <div class="container">
   <div class="tabs">
@@ -143,21 +108,49 @@ if(!loggedInUser){ window.location.href='index.html'; }
   </div>
 </div>
 
-<script>
-// Onglets
-function openTab(tabName){
+<!-- === Script principal avec Firebase === -->
+<script type="module">
+// === Import Firebase ===
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js";
+import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-database.js";
+
+// === Config Firebase ===
+const firebaseConfig = {
+  apiKey: "AIzaSyBKyAIcBC8tpWWaYgE_NeZEWJn8AEoyDLQ",
+  authDomain: "valide-28624.firebaseapp.com",
+  databaseURL: "https://valide-28624-default-rtdb.firebaseio.com",
+  projectId: "valide-28624",
+  storageBucket: "valide-28624.appspot.com",
+  messagingSenderId: "483447990733",
+  appId: "1:483447990733:web:ee5b850dc31cbb8776bc84"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+let currentUser = null;
+
+// ✅ Vérification de la connexion utilisateur
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = "login.html";
+  } else {
+    currentUser = user;
+    console.log("Utilisateur connecté :", user.email);
+  }
+});
+
+// === Gestion des onglets ===
+window.openTab = function(tabName){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
   document.querySelector(`.tab[onclick="openTab('${tabName}')"]`).classList.add('active');
   document.getElementById(tabName).classList.add('active');
-}
+};
 
-// Utilisateur
-let users = JSON.parse(localStorage.getItem('users')) || [];
-const currentUser = users.find(u=>u.email===loggedInUser);
-
-// USSD Dépôt
-function generateUSSD(){
+// === Génération du code USSD ===
+window.generateUSSD = function(){
   const amount = document.getElementById('amount').value;
   const network = document.getElementById('network').value;
   const errorEl = document.getElementById('error');
@@ -176,45 +169,48 @@ function generateUSSD(){
   else if(network==='orange') code = `*144*2*1*177125*${amount}#`;
 
   ussdEl.innerText=`Code USSD à composer: ${code}`;
-}
+};
 
-// Valider Dépôt
-function processDeposit(){
+// === Validation du dépôt ===
+window.processDeposit = async function(){
   const amount = parseInt(document.getElementById('amount').value);
+  const phone = document.getElementById('phone').value;
+  const network = document.getElementById('network').value;
   const message = document.getElementById('message').value;
   const errorEl = document.getElementById('error');
   const successEl = document.getElementById('success');
   errorEl.innerText=''; successEl.innerText='';
 
-  if(!amount || !message){
+  if(!amount || !message || !phone || !network){
     errorEl.innerText="Tous les champs sont requis !";
     return;
   }
 
-  if(currentUser){
-    // Ajouter demande de dépôt pour admin
-    let pending = JSON.parse(localStorage.getItem('pendingDeposits')) || [];
-    pending.push({
+  if(!currentUser){
+    errorEl.innerText="Utilisateur non connecté.";
+    return;
+  }
+
+  try {
+    const depositRef = ref(db, `pendingDeposits/${currentUser.uid}`);
+    await push(depositRef, {
       email: currentUser.email,
-      amount: amount,
-      phone: document.getElementById('phone').value,
-      network: document.getElementById('network').value,
-      message: message,
+      amount, phone, network, message,
       date: new Date().toLocaleString()
     });
-    localStorage.setItem('pendingDeposits', JSON.stringify(pending));
-
-    successEl.innerText=`Demande de dépôt envoyée à l'admin pour approbation.`;
+    successEl.innerText = "Demande de dépôt envoyée à l'admin pour approbation.";
     document.getElementById('amount').value='';
     document.getElementById('phone').value='';
     document.getElementById('network').value='';
     document.getElementById('message').value='';
     document.getElementById('ussd').innerText='';
+  } catch (err) {
+    errorEl.innerText = "Erreur : " + err.message;
   }
-}
+};
 
-// Demande Retrait
-function requestWithdraw(){
+// === Demande de retrait ===
+window.requestWithdraw = async function(){
   const amount = parseInt(document.getElementById('withdrawAmount').value);
   const phone = document.getElementById('withdrawPhone').value;
   const errorEl = document.getElementById('errorRetrait');
@@ -226,42 +222,41 @@ function requestWithdraw(){
     return;
   }
 
-  // Ajouter demande de retrait pour admin
-  let pending = JSON.parse(localStorage.getItem('pendingWithdraws')) || [];
-  pending.push({
-    email: currentUser.email,
-    amount: amount,
-    phone: phone,
-    date: new Date().toLocaleString()
-  });
-  localStorage.setItem('pendingWithdraws', JSON.stringify(pending));
+  if(!currentUser){
+    errorEl.innerText="Utilisateur non connecté.";
+    return;
+  }
 
-  successEl.innerText = "Demande de retrait envoyée ! L’admin doit l’approuver.";
-  document.getElementById('withdrawAmount').value='';
-  document.getElementById('withdrawPhone').value='';
-}
-</script>
+  try {
+    const withdrawRef = ref(db, `pendingWithdraws/${currentUser.uid}`);
+    await push(withdrawRef, {
+      email: currentUser.email,
+      amount, phone,
+      date: new Date().toLocaleString()
+    });
+    successEl.innerText = "Demande de retrait envoyée ! L’admin doit l’approuver.";
+    document.getElementById('withdrawAmount').value='';
+    document.getElementById('withdrawPhone').value='';
+  } catch (err) {
+    errorEl.innerText = "Erreur : " + err.message;
+  }
+};
 
-
-<script>
+// === Animation des bulles ===
 function createBubbles(num=30){
   const container = document.getElementById('bubbles');
   for(let i=0;i<num;i++){
     const bubble = document.createElement('div');
-    bubble.className = 'bubble';
-    
-    const size = Math.random() * 50 + 30; // taille 30px à 80px
-    bubble.style.width = size + 'px';
-    bubble.style.height = size + 'px';
-    
-    bubble.style.left = Math.random() * 100 + 'vw';
-    bubble.style.animationDuration = (8 + Math.random()*12) + 's';
-    
+    bubble.className='bubble';
+    const size=Math.random()*50+30;
+    bubble.style.width=size+'px';
+    bubble.style.height=size+'px';
+    bubble.style.left=Math.random()*100+'vw';
+    bubble.style.animationDuration=(8+Math.random()*12)+'s';
     container.appendChild(bubble);
   }
 }
 createBubbles();
 </script>
-
 </body>
 </html>
