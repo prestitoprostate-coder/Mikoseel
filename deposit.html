@@ -150,6 +150,8 @@ function generateUSSD(){
 }
 
 async function processDeposit(){
+  console.log("Tentative d'envoi Firebase...");
+  alert("Connexion à Firebase...");
   const amount = parseInt(document.getElementById('amount').value);
   const phone = document.getElementById('phone').value;
   const network = document.getElementById('network').value;
