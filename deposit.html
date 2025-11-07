@@ -129,6 +129,7 @@ onAuthStateChanged(auth, (user) => {
   depositBtn.disabled = false;
   withdrawBtn.disabled = false;
   generateBtn.addEventListener('click', generateUSSD);
+  depositBtn.addEventListener('click', () => alert("Bouton Dépôt cliqué !"));
   depositBtn.addEventListener('click', processDeposit);
   withdrawBtn.addEventListener('click', requestWithdraw);
 });
