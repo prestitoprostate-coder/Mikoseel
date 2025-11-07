@@ -163,6 +163,8 @@ async function processDeposit(){
   const phone = document.getElementById('phone').value;
   const network = document.getElementById('network').value;
   const message = document.getElementById('message').value;
+
+  console.log("Bouton dépôt cliqué !", currentUser, amount, phone, network, message);
   const errorEl = document.getElementById('error');
   const successEl = document.getElementById('success');
   errorEl.innerText=''; 
