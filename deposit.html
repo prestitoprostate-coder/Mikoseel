@@ -157,27 +157,46 @@ function generateUSSD(){
 }
 
 async function processDeposit(){
-  console.log("Tentative d'envoi Firebase...");
-  alert("Connexion à Firebase...");
+  alert("Bouton Dépôt cliqué !");  // <-- ça nous dira si le clic fonctionne
+
   const amount = parseInt(document.getElementById('amount').value);
   const phone = document.getElementById('phone').value;
   const network = document.getElementById('network').value;
   const message = document.getElementById('message').value;
   const errorEl = document.getElementById('error');
   const successEl = document.getElementById('success');
-  errorEl.innerText=''; successEl.innerText='';
-  if(!amount || !phone || !network || !message){ errorEl.innerText="Tous les champs sont requis !"; return; }
-  if(!currentUser){ errorEl.innerText="Utilisateur non connecté."; return; }
+  errorEl.innerText=''; 
+  successEl.innerText='';
+
+  if(!amount || !phone || !network || !message){
+    errorEl.innerText="Tous les champs sont requis !"; 
+    return; 
+  }
+  if(!currentUser){ 
+    errorEl.innerText="Utilisateur non connecté."; 
+    return; 
+  }
+
   try{
-    await push(ref(db, `pendingDeposits/${currentUser.uid}`), {email: currentUser.email, amount, phone, network, message, date: new Date().toLocaleString()});
+    await push(ref(db, `pendingDeposits/${currentUser.uid}`), {
+      email: currentUser.email, 
+      amount, 
+      phone, 
+      network, 
+      message, 
+      date: new Date().toLocaleString()
+    });
     successEl.innerText = "Demande de dépôt envoyée à l'admin pour approbation.";
     document.getElementById('amount').value='';
     document.getElementById('phone').value='';
     document.getElementById('network').value='';
     document.getElementById('message').value='';
     document.getElementById('ussd').innerText='';
-  }catch(err){ errorEl.innerText="Erreur : "+err.message; }
+  }catch(err){ 
+    errorEl.innerText="Erreur : "+err.message; 
+  }
 }
+
 
 async function requestWithdraw(){
   const amount = parseInt(document.getElementById('withdrawAmount').value);
