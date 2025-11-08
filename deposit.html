@@ -17,9 +17,9 @@ input, select, textarea {width:100%; padding:12px; margin-bottom:12px; border-ra
 textarea {resize:none;}
 button {width:100%; padding:12px; border:none; border-radius:12px; background:#ff7f50; color:#0d0d1f; font-weight:700; cursor:pointer; font-size:16px; transition:0.3s; margin-bottom:10px;}
 button:hover {transform:scale(1.05);}
-#error, #success {text-align:center; margin-bottom:10px;}
-#error {color:#ff4d4d;}
-#success {color:#00ff99;}
+#error, #success, #errorRetrait, #successRetrait {text-align:center; margin-bottom:10px;}
+#error, #errorRetrait {color:#ff4d4d;}
+#success, #successRetrait {color:#00ff99;}
 </style>
 </head>
 <body>
@@ -62,6 +62,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebas
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js";
 import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-database.js";
 
+// ======= Configuration Firebase =======
 const firebaseConfig = {
   apiKey: "AIzaSyBKyAIcBC8tpWWaYgE_NeZEWJn8AEoyDLQ",
   authDomain: "valide-28624.firebaseapp.com",
@@ -82,6 +83,7 @@ const withdrawBtn = document.getElementById('withdrawBtn');
 depositBtn.disabled = true;
 withdrawBtn.disabled = true;
 
+// ======= Gestion des onglets =======
 window.openTab = function(tabName){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
@@ -89,6 +91,7 @@ window.openTab = function(tabName){
   document.getElementById(tabName).classList.add('active');
 };
 
+// ======= Authentification =======
 onAuthStateChanged(auth, (user) => {
   if(!user){
     alert("Utilisateur non connecté !");
@@ -100,73 +103,77 @@ onAuthStateChanged(auth, (user) => {
   withdrawBtn.disabled = false;
 });
 
-// Dépôt simple
+// ======= Envoi Dépôt =======
 async function processDeposit() {
-    const amount = parseInt(document.getElementById('amount').value);
-    const phone = document.getElementById('phone').value;
-    const network = document.getElementById('network').value;
-    const message = document.getElementById('message').value;
-    const errorEl = document.getElementById('error');
-    const successEl = document.getElementById('success');
-    errorEl.innerText = '';
-    successEl.innerText = '';
+  const amount = parseInt(document.getElementById('amount').value);
+  const phone = document.getElementById('phone').value;
+  const network = document.getElementById('network').value;
+  const message = document.getElementById('message').value;
+  const errorEl = document.getElementById('error');
+  const successEl = document.getElementById('success');
+  errorEl.innerText = '';
+  successEl.innerText = '';
 
-    if (!amount || !phone || !network || !message) {
-        errorEl.innerText = "Tous les champs sont requis !";
-        return;
-    }
-    try {
-        await push(ref(db, 'pendingDeposits'), {
-            email: currentUser?.email || "inconnu",
-            amount,
-            phone,
-            network,
-            message,
-            uid: currentUser?.uid || "",
-            date: new Date().toLocaleString()
-        });
-        successEl.innerText = "Dépôt envoyé !";
-        document.getElementById('amount').value = '';
-        document.getElementById('phone').value = '';
-        document.getElementById('network').value = '';
-        document.getElementById('message').value = '';
-    } catch(err){
-        errorEl.innerText = "Erreur Firebase : " + err.message;
-    }
+  if (!amount || !phone || !network || !message) {
+    errorEl.innerText = "Tous les champs sont requis !";
+    return;
+  }
+
+  try {
+    // ✅ Envoi direct à la racine (plus de /uid/)
+    await push(ref(db, 'pendingDeposits'), {
+      email: currentUser?.email || "inconnu",
+      amount,
+      phone,
+      network,
+      message,
+      uid: currentUser?.uid || "",
+      date: new Date().toLocaleString()
+    });
+    successEl.innerText = "✅ Dépôt envoyé à l’admin.";
+    document.getElementById('amount').value = '';
+    document.getElementById('phone').value = '';
+    document.getElementById('network').value = '';
+    document.getElementById('message').value = '';
+  } catch(err) {
+    errorEl.innerText = "Erreur Firebase : " + err.message;
+  }
 }
 
-// Retrait simple
+// ======= Envoi Retrait =======
 async function processWithdraw() {
-    const amount = parseInt(document.getElementById('withdrawAmount').value);
-    const phone = document.getElementById('withdrawPhone').value;
-    const errorEl = document.getElementById('errorRetrait');
-    const successEl = document.getElementById('successRetrait');
-    errorEl.innerText = '';
-    successEl.innerText = '';
+  const amount = parseInt(document.getElementById('withdrawAmount').value);
+  const phone = document.getElementById('withdrawPhone').value;
+  const errorEl = document.getElementById('errorRetrait');
+  const successEl = document.getElementById('successRetrait');
+  errorEl.innerText = '';
+  successEl.innerText = '';
 
-    if(!amount || !phone){
-        errorEl.innerText = "Tous les champs sont requis !";
-        return;
-    }
-    try {
-        await push(ref(db, 'pendingWithdraws'), {
-            email: currentUser?.email || "inconnu",
-            amount,
-            phone,
-            uid: currentUser?.uid || "",
-            date: new Date().toLocaleString()
-        });
-        successEl.innerText = "Retrait envoyé !";
-        document.getElementById('withdrawAmount').value = '';
-        document.getElementById('withdrawPhone').value = '';
-    } catch(err){
-        errorEl.innerText = "Erreur Firebase : " + err.message;
-    }
+  if(!amount || !phone){
+    errorEl.innerText = "Tous les champs sont requis !";
+    return;
+  }
+
+  try {
+    // ✅ Envoi direct à la racine
+    await push(ref(db, 'pendingWithdraws'), {
+      email: currentUser?.email || "inconnu",
+      amount,
+      phone,
+      uid: currentUser?.uid || "",
+      date: new Date().toLocaleString()
+    });
+    successEl.innerText = "✅ Retrait envoyé à l’admin.";
+    document.getElementById('withdrawAmount').value = '';
+    document.getElementById('withdrawPhone').value = '';
+  } catch(err) {
+    errorEl.innerText = "Erreur Firebase : " + err.message;
+  }
 }
 
+// ======= Liens boutons =======
 depositBtn.addEventListener('click', processDeposit);
 withdrawBtn.addEventListener('click', processWithdraw);
 </script>
-
 </body>
 </html>
