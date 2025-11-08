@@ -12,29 +12,15 @@ h2 { color:#ff7f50; text-align:center; margin-bottom:20px; }
 .section h3 { border-bottom:2px solid #ff7f50; padding-bottom:5px; margin-bottom:20px; }
 .card { background:#1a1a2f; border-radius:12px; padding:15px; margin-bottom:15px; box-shadow:0 4px 10px rgba(0,0,0,0.5); }
 .card p { margin:5px 0; }
-textarea { width:100%; height:60px; border-radius:8px; border:none; padding:5px; background:#12122a; color:#fff; resize:none; margin-bottom:5px; }
 button { padding:6px 12px; border:none; border-radius:8px; background:#ff7f50; color:#0d0d1f; cursor:pointer; font-weight:bold; margin-right:5px; margin-top:5px; }
 button:hover { transform:scale(1.05); }
-.card-buttons { display:flex; justify-content:flex-start; flex-wrap:wrap; }
-#loginDiv { max-width:400px; margin:50px auto; text-align:center; }
-#loginDiv input { width:80%; padding:10px; margin:5px 0; border-radius:8px; border:none; background:#12122a; color:#fff; }
-#loginDiv button { width:84%; margin-top:10px; }
-#loginError { color:#ff4d4d; margin-top:10px; }
-#adminDiv { display:none; }
 </style>
 </head>
 <body>
 
 <h2>Admin - Mikosell Pro</h2>
 
-<div id="loginDiv">
-  <input type="text" id="adminUser" placeholder="Utilisateur">
-  <input type="password" id="adminPass" placeholder="Mot de passe">
-  <button onclick="loginAdmin()">Se connecter</button>
-  <div id="loginError"></div>
-</div>
-
-<div id="adminDiv" class="container">
+<div class="container">
   <div class="section" id="depositSection">
     <h3>Dépôts en attente</h3>
   </div>
@@ -45,9 +31,8 @@ button:hover { transform:scale(1.05); }
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
-import { getDatabase, ref, onValue, remove, get, update, push } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-database.js";
+import { getDatabase, ref, onValue, remove, get, update } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-database.js";
 
-// ===== Firebase Config =====
 const firebaseConfig = {
   apiKey: "AIzaSyBKyAIcBC8tpWWaYgE_NeZEWJn8AEoyDLQ",
   authDomain: "valide-28624.firebaseapp.com",
@@ -60,167 +45,102 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// ===== Login Admin =====
-window.loginAdmin = function() {
-  const user = document.getElementById("adminUser").value;
-  const pass = document.getElementById("adminPass").value;
-  if(user === "Mikoseel" && pass === "Dada12da12"){
-    document.getElementById("loginDiv").style.display="none";
-    document.getElementById("adminDiv").style.display="block";
-    loadDeposits();
-    loadWithdraws();
-  } else {
-    document.getElementById("loginError").innerText="Identifiant ou mot de passe incorrect.";
-  }
-};
+let currentDeposits = [];
+let currentWithdraws = [];
 
-// ===== Récupération Dépôts =====
-function loadDeposits(){
-  const depRef = ref(db, 'pendingDeposits');
-  onValue(depRef, snapshot => {
-    const deposits = [];
-    snapshot.forEach(userSnap => {
-      const uid = userSnap.key;
-      userSnap.forEach(depSnap => {
-        deposits.push({ ...depSnap.val(), uid, depositId: depSnap.key });
-      });
+// Charger dépôts
+function loadDeposits() {
+    const depRef = ref(db, 'pendingDeposits');
+    onValue(depRef, snapshot => {
+        const deposits = [];
+        snapshot.forEach(depSnap => deposits.push({...depSnap.val(), depositId: depSnap.key}));
+        currentDeposits = deposits;
+        renderDeposits(deposits);
     });
-    renderDeposits(deposits);
-  });
 }
 
-// ===== Récupération Retraits =====
-function loadWithdraws(){
-  const wdrRef = ref(db, 'pendingWithdraws');
-  onValue(wdrRef, snapshot => {
-    const withdraws = [];
-    snapshot.forEach(userSnap => {
-      const uid = userSnap.key;
-      userSnap.forEach(wdrSnap => {
-        withdraws.push({ ...wdrSnap.val(), uid, withdrawId: wdrSnap.key });
-      });
+// Charger retraits
+function loadWithdraws() {
+    const wdrRef = ref(db, 'pendingWithdraws');
+    onValue(wdrRef, snapshot => {
+        const withdraws = [];
+        snapshot.forEach(wdrSnap => withdraws.push({...wdrSnap.val(), withdrawId: wdrSnap.key}));
+        currentWithdraws = withdraws;
+        renderWithdraws(withdraws);
     });
-    renderWithdraws(withdraws);
-  });
 }
 
-// ===== Machines =====
-const machines = [
-  {name:"Bronze", min:2000, max:5000, gain12h:250},
-  {name:"Silver", min:5001, max:20000, gain12h:900},
-  {name:"Gold", min:20001, max:50000, gain12h:2000},
-  {name:"Diamond", min:50001, max:100000, gain12h:12000}
-];
+// Rendu dépôts
+function renderDeposits(deposits) {
+    const section = document.getElementById('depositSection');
+    section.innerHTML = '<h3>Dépôts en attente</h3>';
+    deposits.forEach((d,i) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+            <p><strong>Email:</strong> ${d.email}</p>
+            <p><strong>Montant:</strong> ${d.amount}</p>
+            <p><strong>Numéro:</strong> ${d.phone}</p>
+            <p><strong>Réseau:</strong> ${d.network}</p>
+            <p><strong>Date:</strong> ${d.date}</p>
+            <p><strong>Message:</strong></p>
+            <textarea readonly>${d.message}</textarea>
+            <button onclick="approveDeposit(${i})">Approuver</button>
+        `;
+        section.appendChild(card);
+    });
+}
 
-// ===== Fonctions =====
-function copyText(id){
-  const textArea = document.getElementById(id);
-  textArea.select();
-  document.execCommand("copy");
-  alert("Message copié !");
+// Rendu retraits
+function renderWithdraws(withdraws) {
+    const section = document.getElementById('withdrawSection');
+    section.innerHTML = '<h3>Retraits en attente</h3>';
+    withdraws.forEach((w,i) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+            <p><strong>Email:</strong> ${w.email}</p>
+            <p><strong>Montant:</strong> ${w.amount}</p>
+            <p><strong>Numéro:</strong> ${w.phone}</p>
+            <p><strong>Date:</strong> ${w.date}</p>
+            <button onclick="approveWithdraw(${i})">Approuver</button>
+        `;
+        section.appendChild(card);
+    });
 }
 
 // Approuver dépôt
-window.approveDeposit = async function(index){
-  const deposit = currentDeposits[index];
-  if(!deposit) return;
-  try {
-    const userRef = ref(db, 'users/' + deposit.uid);
-    const userSnap = await get(userRef);
-    const balance = userSnap.val()?.balance || 0;
-    await update(userRef, { balance: balance + deposit.amount });
-
-    const histRef = ref(db, `users/${deposit.uid}/history`);
-    await push(histRef, {
-      date: deposit.date,
-      amount: deposit.amount,
-      message: deposit.message,
-      type: 'Dépôt'
-    });
-
-    await remove(ref(db, `pendingDeposits/${deposit.uid}/${deposit.depositId}`));
-    alert("Dépôt approuvé !");
-  } catch(err){
-    alert("Erreur : " + err.message);
-  }
+window.approveDeposit = async function(index) {
+    const dep = currentDeposits[index];
+    if(!dep) return;
+    try{
+        const userRef = ref(db, `users/${dep.uid}`);
+        const userSnap = await get(userRef);
+        const balance = userSnap.val()?.balance || 0;
+        await update(userRef, {balance: balance + dep.amount});
+        await remove(ref(db, `pendingDeposits/${dep.depositId}`));
+        alert("Dépôt approuvé !");
+    }catch(err){ alert("Erreur : "+err.message); }
 }
 
 // Approuver retrait
-window.approveWithdraw = async function(index){
-  const withdraw = currentWithdraws[index];
-  if(!withdraw) return;
-  try {
-    const userRef = ref(db, 'users/' + withdraw.uid);
-    const userSnap = await get(userRef);
-    const balance = userSnap.val()?.balance || 0;
-    if(balance < withdraw.amount){ alert("Solde insuffisant !"); return; }
-    await update(userRef, { balance: balance - withdraw.amount });
-
-    const histRef = ref(db, `users/${withdraw.uid}/history`);
-    await push(histRef, {
-      date: withdraw.date,
-      amount: withdraw.amount,
-      message: withdraw.message || "",
-      type: 'Retrait'
-    });
-
-    await remove(ref(db, `pendingWithdraws/${withdraw.uid}/${withdraw.withdrawId}`));
-    alert("Retrait approuvé !");
-  } catch(err){
-    alert("Erreur : " + err.message);
-  }
+window.approveWithdraw = async function(index) {
+    const wdr = currentWithdraws[index];
+    if(!wdr) return;
+    try{
+        const userRef = ref(db, `users/${wdr.uid}`);
+        const userSnap = await get(userRef);
+        const balance = userSnap.val()?.balance || 0;
+        if(balance < wdr.amount){ alert("Solde insuffisant !"); return; }
+        await update(userRef, {balance: balance - wdr.amount});
+        await remove(ref(db, `pendingWithdraws/${wdr.withdrawId}`));
+        alert("Retrait approuvé !");
+    }catch(err){ alert("Erreur : "+err.message); }
 }
 
-let currentDeposits = [];
-function renderDeposits(deposits){
-  currentDeposits = deposits;
-  const section = document.getElementById('depositSection');
-  section.innerHTML = '<h3>Dépôts en attente</h3>';
-  if(deposits.length === 0){ section.innerHTML += "<p>Aucune demande de dépôt en attente.</p>"; return; }
-  deposits.forEach((d,i)=>{
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = `
-      <p><strong>Utilisateur:</strong> ${d.email}</p>
-      <p><strong>Montant:</strong> ${d.amount}</p>
-      <p><strong>Numéro:</strong> ${d.phone}</p>
-      <p><strong>Réseau:</strong> ${d.network}</p>
-      <p><strong>Date:</strong> ${d.date}</p>
-      <p><strong>Message:</strong></p>
-      <textarea readonly id="depMsg${i}">${d.message}</textarea>
-      <div class="card-buttons">
-        <button onclick="copyText('depMsg${i}')">Copier</button>
-        <button onclick="approveDeposit(${i})">Approuver</button>
-      </div>
-    `;
-    section.appendChild(card);
-  });
-}
-
-let currentWithdraws = [];
-function renderWithdraws(withdraws){
-  currentWithdraws = withdraws;
-  const section = document.getElementById('withdrawSection');
-  section.innerHTML = '<h3>Retraits en attente</h3>';
-  if(withdraws.length === 0){ section.innerHTML += "<p>Aucune demande de retrait en attente.</p>"; return; }
-  withdraws.forEach((w,i)=>{
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = `
-      <p><strong>Utilisateur:</strong> ${w.email}</p>
-      <p><strong>Montant:</strong> ${w.amount}</p>
-      <p><strong>Numéro:</strong> ${w.phone}</p>
-      <p><strong>Date:</strong> ${w.date}</p>
-      <p><strong>Message:</strong></p>
-      <textarea readonly id="retMsg${i}">${w.message || ''}</textarea>
-      <div class="card-buttons">
-        <button onclick="copyText('retMsg${i}')">Copier</button>
-        <button onclick="approveWithdraw(${i})">Approuver</button>
-      </div>
-    `;
-    section.appendChild(card);
-  });
-}
+loadDeposits();
+loadWithdraws();
 </script>
+
 </body>
 </html>
