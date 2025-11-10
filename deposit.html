@@ -229,24 +229,31 @@ onAuthStateChanged(auth, user=>{
   } else { window.location.href = "index.html"; }
 });
 
-// Affichage packs
-const packsContainer = document.getElementById('packsContainer');
-packs.forEach(p => {
-  const div = document.createElement('div');
-  div.className = 'pack';
-  div.innerHTML = `
-    <h4>${p.name}</h4>
-    <div>Invest: ${p.min.toLocaleString()} - ${p.max.toLocaleString()} FCFA</div>
-    <div class="small-muted">Gains/12h: ${p.gain.toLocaleString()} FCFA</div>
-  `;
-  div.onclick = () => {
-    document.getElementById('depositPack').value = p.name;
-    document.getElementById('depositAmount').value = p.min;
-    updateUSSD();
-  };
-  packsContainer.appendChild(div);
-});
+// --- USSD ---
+function updateUSSD(){
+  const network = document.getElementById('depositNetwork').value;
+  const amount = parseInt(document.getElementById('depositAmount').value) || 0;
+  const phone = document.getElementById('depositPhone').value.trim();
+  const ussd = document.getElementById('ussdCode');
 
+  if(!network || amount <= 0){
+    ussd.value = '';
+    return;
+  }
+
+  switch(network){
+    case 'mtn': ussd.value=`*880*41*177125*${amount}#`; break;
+    case 'celtiis': ussd.value=`*889*6*1*ESS02*${amount}#`; break;
+    case 'moov': ussd.value=`*851*4*1*264081*${amount}#`; break;
+    default: ussd.value=''; break;
+  }
+}
+
+// --- Déclencher USSD lors de la saisie réseau, montant ou numéro ---
+['depositNetwork','depositAmount','depositPhone'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', updateUSSD);
+});
+  
 // Prévisualisation image
 document.getElementById('depositProof').addEventListener('change', e=>{
   const file = e.target.files[0];
