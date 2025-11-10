@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mikoseel — Dépôt & Retrait</title>
+<style>
+:root{
+  --violet-dark:#0c001a; --violet:#4c1d95; --violet-mid:#6d28d9; --violet-light:#a855f7;
+  --rose:#ec4899; --text-light:#e9d5ff;
+  --card-bg: rgba(20,0,40,0.6);
+  --card-shadow: rgba(236,72,153,0.25);
+  font-family:"Poppins",sans-serif;
+}
+body{margin:0; color:var(--text-light); background:linear-gradient(120deg,var(--violet-dark),var(--violet),var(--violet-mid)); min-height:100vh;}
+header{background:linear-gradient(90deg,var(--violet-mid),var(--rose)); padding:12px 20px; display:flex; justify-content:space-between; align-items:center;}
+header h1{margin:0;font-size:20px;}
+.tabs{display:flex; gap:12px; margin:20px;}
+.tab-btn{padding:8px 16px; border:none; border-radius:10px; background:rgba(20,0,40,0.6); color:#fff; cursor:pointer;}
+.tab-btn.active{background:linear-gradient(90deg,var(--violet-mid),var(--rose));}
+.container{max-width:1200px; margin:auto; padding:0 10px;}
+.section{display:none;}
+.section.active{display:block;}
+.card{background:var(--card-bg); padding:18px; border-radius:12px; box-shadow:0 8px 30px var(--card-shadow); margin-bottom:20px;}
+input, select, textarea{padding:10px;border-radius:8px;border:none;background:rgba(255,255,255,0.06);color:var(--text-light);width:100%; margin-top:6px;}
+button.primary{background:linear-gradient(90deg,var(--violet-mid),var(--rose));color:#fff;border:none;padding:10px 14px;border-radius:10px;cursor:pointer;margin-top:10px;width:100%; font-weight:600;}
+.pack-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:12px;}
+.pack{padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.12));cursor:pointer;border:1px solid rgba(255,255,255,0.03);}
+.pack:hover{background:linear-gradient(180deg, rgba(255,255,255,0.08), rgba(0,0,0,0.18));}
+.pack h4{margin:0 0 6px 0}
+.small-muted{color:#d6c6ff;font-size:13px;margin-top:6px}
+#previewImg{max-width:100%;max-height:160px;border-radius:10px;opacity:0.6;margin-top:6px}
+
+
+.pack-list{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:12px;
+  margin-top:12px;
+}
+
+.pack{
+  padding:12px;
+  border-radius:10px;
+  color:#fff;
+  text-align:center;
+  cursor:pointer;
+  font-weight:600;
+  transition:transform 0.2s;
+}
+
+.pack:hover{ transform:scale(1.05); }
+
+#packBronze{ background:#cd7f32; }
+#packSilver{ background:#c0c0c0; color:#000; }
+#packGold{ background:#ffd700; color:#000; }
+#packDiamond{ background:#b9f2ff; color:#000; }
+.small-muted{ font-size:13px; margin-top:6px; color:#e0dfff; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Mikoseel — Dépôt & Retrait</h1>
+  <div>Utilisateur: <span id="userEmailDisplay">...</span></div>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" data-target="depositSection">Dépôt</button>
+  <button class="tab-btn" data-target="withdrawSection">Retrait</button>
+</div>
+
+<div class="container">
+
+  <!-- SECTION DÉPÔT -->
+  <div class="section active" id="depositSection">
+    <div class="card">
+      <h2>Dépôt</h2>
+      <form id="depositForm">
+        <label>Pack sélectionné</label>
+        <input type="text" id="depositPack" readonly placeholder="Choisissez un pack ci-dessous">
+        <div class="pack-list" id="packsContainer"></div>
+        <label>Montant (FCFA)</label>
+        <input type="number" id="depositAmount" min="1">
+        <label>Réseau</label>
+        <select id="depositNetwork">
+          <option value="">-- Choisir --</option>
+          <option value="mtn">MTN</option>
+          <option value="celtiis">Celtiis</option>
+          <option value="moov">Moov</option>
+        </select>
+        <label>Numéro</label>
+        <input type="text" id="depositPhone" placeholder="Ex: 60000000">
+        <label>USSD généré</label>
+        <input type="text" id="ussdCode" readonly>
+        <label>Message de transaction</label>
+        <textarea id="transactionMessage" rows="2"></textarea>
+        <label>Capture paiement</label>
+        <input type="file" id="depositProof" accept="image/*">
+        <img id="previewImg" src="" style="display:none">
+        <button type="submit" class="primary">Valider Dépôt</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- SECTION RETRAIT -->
+  <div class="section" id="withdrawSection">
+    <div class="card">
+      <h2>Retrait</h2>
+      <form id="withdrawForm">
+        <label>Montant (FCFA)</label>
+        <input type="number" id="withdrawAmount" min="1">
+        <label>Méthode</label>
+        <select id="withdrawNetwork">
+          <option value="">-- Choisir --</option>
+          <option value="mtn">MTN</option>
+          <option value="celtiis">Celtiis</option>
+          <option value="moov">Moov</option>
+          <option value="virement">Virement Bancaire</option>
+        </select>
+        <label>Numéro</label>
+        <input type="text" id="withdrawPhone" placeholder="Ex: 60000000">
+        <label>Message de transaction / info</label>
+        <textarea id="withdrawMessage" rows="2"></textarea>
+        <button type="submit" class="primary">Valider Retrait</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- SOLDE -->
+  <div class="card small-card">
+    <h3>Solde du compte</h3>
+    <p id="balanceDisplay">0 FCFA</p>
+  </div>
+
+</div>
+
+<script>
+const packs = [
+  { name: 'Pack Bronze', min: 2000, max: 5000, gain: 250, colorId:'packBronze' },
+  { name: 'Pack Silver', min: 5000, max: 10000, gain: 900, colorId:'packSilver' },
+  { name: 'Pack Gold', min: 10000, max: 50000, gain: 2000, colorId:'packGold' },
+  { name: 'Pack Diamond', min: 50000, max: 1500000, gain: 12000, colorId:'packDiamond' }
+];
+
+const packsContainer = document.getElementById('packsContainer');
+packs.forEach(p => {
+  const div = document.createElement('div');
+  div.className = 'pack';
+  div.id = p.colorId;
+  div.innerHTML = `
+    <h4>${p.name}</h4>
+    <div>Invest: ${p.min.toLocaleString()} - ${p.max.toLocaleString()} FCFA</div>
+    <div class="small-muted">Gains/12h: ${p.gain.toLocaleString()} FCFA</div>
+  `;
+  div.onclick = () => {
+    document.getElementById('depositPack').value = p.name;
+    document.getElementById('depositAmount').value = p.min;
+    updateUSSD(); // si tu utilises la fonction USSD
+  };
+  packsContainer.appendChild(div);
+});
+
+
+// Onglets
+const tabs = document.querySelectorAll(".tab-btn");
+const sections = document.querySelectorAll(".section");
+tabs.forEach(tab => {
+  tab.addEventListener("click", () => {
+    tabs.forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    sections.forEach(sec => sec.classList.remove("active"));
+    document.getElementById(tab.dataset.target).classList.add("active");
+  });
+});
+</script>
+
+<!-- FIREBASE + EMAILJS -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-analytics.js";
+import emailjs from "https://cdn.emailjs.com/dist/email.min.js";
+
+// --- Firebase ---
+const firebaseConfig = {
+    apiKey: "AIzaSyBKyAIcBC8tpWWaYgE_NeZEWJn8AEoyDLQ",
+    authDomain: "valide-28624.firebaseapp.com",
+    databaseURL: "https://valide-28624-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "valide-28624",
+    storageBucket: "valide-28624.firebasestorage.app",
+    messagingSenderId: "483447990733",
+    appId: "1:483447990733:web:25c76bde60f9d78e76bc84",
+    measurementId: "G-59E6G87VWZ"
+};
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const db = getFirestore(app);
+const auth = getAuth(app);
+window.firestore = db;
+
+// --- EmailJS ---
+emailjs.init("6BLdU6p0YUHLeqINk");
+
+// --- Variables ---
+let currentUserEmail = null;
+const packs = [
+  { name: 'Pack Bronze', min: 2000, max: 5000, gain: 250 },
+  { name: 'Pack Silver', min: 5000, max: 10000, gain: 900 },
+  { name: 'Pack Gold', min: 10000, max: 50000, gain: 2000 },
+  { name: 'Pack Diamond', min: 50000, max: 1500000, gain: 12000 }
+];
+
+// Vérification utilisateur
+onAuthStateChanged(auth, user=>{
+  if(user){
+    currentUserEmail = user.email;
+    document.getElementById('userEmailDisplay').textContent = currentUserEmail;
+    updateBalance();
+    applyPackGains();
+    setInterval(applyPackGains, 5*60*1000);
+  } else { window.location.href = "index.html"; }
+});
+
+// Affichage packs
+const packsContainer = document.getElementById('packsContainer');
+packs.forEach(p => {
+  const div = document.createElement('div');
+  div.className = 'pack';
+  div.innerHTML = `
+    <h4>${p.name}</h4>
+    <div>Invest: ${p.min.toLocaleString()} - ${p.max.toLocaleString()} FCFA</div>
+    <div class="small-muted">Gains/12h: ${p.gain.toLocaleString()} FCFA</div>
+  `;
+  div.onclick = () => {
+    document.getElementById('depositPack').value = p.name;
+    document.getElementById('depositAmount').value = p.min;
+    updateUSSD();
+  };
+  packsContainer.appendChild(div);
+});
+
+// Prévisualisation image
+document.getElementById('depositProof').addEventListener('change', e=>{
+  const file = e.target.files[0];
+  const img = document.getElementById('previewImg');
+  if(file){
+    const reader = new FileReader();
+    reader.onload = ev=>{ img.src=ev.target.result; img.style.display='block'; };
+    reader.readAsDataURL(file);
+  } else { img.style.display='none'; }
+});
+
+// USSD
+function updateUSSD(){
+  const network = document.getElementById('depositNetwork').value;
+  const amount = parseInt(document.getElementById('depositAmount').value)||0;
+  const phone = document.getElementById('depositPhone').value.trim();
+  const ussd = document.getElementById('ussdCode');
+  if(!network||amount<=0||!phone){ ussd.value=''; return; }
+  switch(network){
+    case 'mtn': ussd.value=`*880*42618*${amount}#`; break;
+    case 'celtiis': ussd.value=`*889*6*1*ESS02*${amount}#`; break;
+    case 'moov': ussd.value=`*881*12345*${amount}#`; break;
+    default: ussd.value=''; break;
+  }
+}
+['depositNetwork','depositAmount','depositPhone'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', updateUSSD);
+});
+
+// Update balance
+async function updateBalance(){
+  if(!currentUserEmail) return;
+  const docRef = doc(db, "users", currentUserEmail);
+  const docSnap = await getDoc(docRef);
+  if(docSnap.exists()){
+    document.getElementById('balanceDisplay').textContent = docSnap.data().balance.toLocaleString()+" FCFA";
+  } else {
+    await setDoc(docRef,{name:"",balance:0,history:[],packs:[]});
+    document.getElementById('balanceDisplay').textContent="0 FCFA";
+  }
+}
+
+// Dépôt
+document.getElementById('depositForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const packName = document.getElementById('depositPack').value || 'Sans pack';
+  const amount = parseInt(document.getElementById('depositAmount').value);
+  const network = document.getElementById('depositNetwork').value;
+  const phone = document.getElementById('depositPhone').value.trim();
+  const message = document.getElementById('transactionMessage').value;
+  if(!network||!amount||!phone){ alert("Réseau, montant et numéro obligatoires"); return; }
+
+  const userRef = doc(db,"users",currentUserEmail);
+  const docSnap = await getDoc(userRef);
+  let balance=0, history=[], userPacks=[];
+  if(docSnap.exists()){
+    balance=docSnap.data().balance||0;
+    history=docSnap.data().history||[];
+    userPacks=docSnap.data().packs||[];
+  }
+
+  balance+=amount;
+  history.unshift({type:'Dépôt', amount, network, phone, pack:packName, date:new Date().toLocaleString(), message});
+  const packInfo=packs.find(p=>p.name===packName);
+  if(packInfo) userPacks.push({name:packName, gain:packInfo.gain, lastGain:Date.now()});
+
+  await setDoc(userRef,{balance,history,packs:userPacks},{merge:true});
+  document.getElementById('balanceDisplay').textContent=balance.toLocaleString()+" FCFA";
+
+  // EmailJS
+  emailjs.send('service_typd4jv','template_khilsn7',{
+    user_name: currentUserEmail,
+    user_email: currentUserEmail,
+    amount, pack:packName,
+    method:network,
+    phone,
+    type:'Dépôt',
+    message
+  }).then(()=>console.log("Email Dépôt envoyé"))
+    .catch(err=>console.error("Erreur EmailJS:",err));
+
+  e.target.reset();
+  document.getElementById('previewImg').style.display='none';
+  document.getElementById('ussdCode').value='';
+  alert("Dépôt validé !");
+});
+
+// Retrait
+document.getElementById('withdrawForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const amount=parseInt(document.getElementById('withdrawAmount').value);
+  const method=document.getElementById('withdrawNetwork').value;
+  const phone=document.getElementById('withdrawPhone').value.trim();
+  const message=document.getElementById('withdrawMessage').value;
+  if(!amount||!method||!phone){ alert("Montant, méthode et numéro obligatoires"); return; }
+
+  const userRef = doc(db,"users",currentUserEmail);
+  const docSnap = await getDoc(userRef);
+  let balance=0, history=[];
+  if(docSnap.exists()){ balance=docSnap.data().balance||0; history=docSnap.data().history||[]; }
+  if(balance<amount){ alert("Solde insuffisant"); return; }
+
+  balance-=amount;
+  history.unshift({type:'Retrait', amount, method, phone, date:new Date().toLocaleString(), message});
+  await setDoc(userRef,{balance,history},{merge:true});
+  document.getElementById('balanceDisplay').textContent=balance.toLocaleString()+" FCFA";
+
+  // EmailJS
+  emailjs.send('service_typd4jv','template_khilsn7',{
+    user_name: currentUserEmail,
+    user_email: currentUserEmail,
+    amount, pack:'N/A',
+    method, type:'Retrait', message
+  }).then(()=>console.log("Email Retrait envoyé"))
+    .catch(err=>console.error("Erreur EmailJS:",err));
+
+  e.target.reset();
+  alert("Retrait validé !");
+});
+
+// Gains pack toutes les 12h
+async function applyPackGains(){
+  if(!currentUserEmail) return;
+  const userRef = doc(db,"users",currentUserEmail);
+  const docSnap = await getDoc(userRef);
+  if(!docSnap.exists()) return;
+  let data = docSnap.data();
+  let balance=data.balance||0;
+  let packsActive=data.packs||[];
+  const now=Date.now();
+  let updated=false;
+
+  packsActive.forEach(pack=>{
+    if(now-pack.lastGain>=12*60*60*1000){
+      balance+=pack.gain;
+      pack.lastGain=now;
+      updated=true;
+    }
+  });
+
+  if(updated){
+    await setDoc(userRef,{balance,packs:packsActive},{merge:true});
+    document.getElementById('balanceDisplay').textContent=balance.toLocaleString()+" FCFA";
+  }
+}
+</script>
+
+</body>
+</html>

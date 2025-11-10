@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mikoseel - Dashboard</title>
+<style>
+:root {
+  --violet-dark: #0c001a;
+  --violet: #4c1d95;
+  --violet-mid: #6d28d9;
+  --violet-light: #a855f7;
+  --rose: #ec4899;
+  --text-light: #e9d5ff;
+  --card-bg: rgba(20,0,40,0.6);
+  --card-shadow: rgba(236,72,153,0.3);
+}
+
+/* Général */
+body {
+  font-family:"Poppins",sans-serif;
+  margin:0;
+  padding:0;
+  background: linear-gradient(120deg,var(--violet-dark),var(--violet),var(--violet-mid));
+  background-size: 300% 300%;
+  animation:moveBg 20s ease infinite;
+  color: var(--text-light);
+  overflow-x: hidden;
+}
+@keyframes moveBg{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+
+/* Bulles animées */
+.bubbles{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  overflow:hidden;z-index:-1;pointer-events:none;
+}
+.bubble{
+  position:absolute;
+  bottom:-100px;
+  background: radial-gradient(circle at 30% 30%, rgba(236,72,153,0.6), rgba(124,58,237,0.1));
+  border-radius:50%;
+  animation:rise linear infinite;
+}
+@keyframes rise{
+  from{transform:translateY(0) scale(1); opacity:0.8;}
+  to{transform:translateY(-120vh) scale(1.5); opacity:0;}
+}
+
+/* Header */
+header{
+  background: linear-gradient(90deg,var(--violet-mid),var(--rose));
+  padding: 12px 24px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  position: sticky;
+  top:0;
+  z-index:10;
+}
+header h1{margin:0;font-size:22px;}
+.menu-container{position:relative;}
+.menu-btn{
+  background:none;
+  border:none;
+  color:#fff;
+  font-size:24px;
+  cursor:pointer;
+}
+.menu-dropdown{
+  display:none;
+  position:absolute;
+  right:0;
+  top:40px;
+  background:rgba(20,0,40,0.95);
+  border-radius:8px;
+  min-width:180px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.5);
+  flex-direction:column;
+}
+.menu-dropdown a, .menu-dropdown button{
+  display:block;
+  width:100%;
+  text-decoration:none;
+  color:#fff;
+  background:none;
+  border:none;
+  padding:12px;
+  text-align:left;
+  cursor:pointer;
+}
+.menu-dropdown a:hover, .menu-dropdown button:hover{
+  background:rgba(236,72,153,0.3);
+}
+
+/* Onglets */
+.tabs{
+  display:flex;
+  gap:15px;
+  margin:20px;
+}
+.tab-btn{
+  padding:10px 20px;
+  border:none;
+  border-radius:10px;
+  background: rgba(20,0,40,0.6);
+  color:#fff;
+  cursor:pointer;
+  transition:0.3s;
+}
+.tab-btn.active,.tab-btn:hover{background: rgba(236,72,153,0.6);}
+
+/* Container & Cards */
+.container{
+  padding:0 20px 40px 20px;
+  max-width:1200px;
+  margin:auto;
+}
+.card{
+  background: var(--card-bg);
+  padding:20px;
+  border-radius:16px;
+  margin-bottom:20px;
+  box-shadow:0 0 20px var(--card-shadow);
+  transition:0.3s;
+}
+.card:hover{
+  transform: translateY(-3px);
+  box-shadow:0 0 30px rgba(236,72,153,0.5);
+}
+.card h2{margin-top:0;color:var(--violet-light);}
+ul{list-style:none; padding:0; max-height:200px; overflow-y:auto;}
+li{padding:6px 0; border-bottom:1px solid rgba(168,85,247,0.2);}
+
+/* Machines */
+.machine-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:20px;}
+.machine-card{
+  padding:15px;
+  border-radius:14px;
+  text-align:center;
+  box-shadow:0 6px 15px rgba(0,0,0,0.5);
+  transition:0.3s;
+  cursor:pointer;
+}
+.machine-card:hover{
+  transform:translateY(-5px);
+  box-shadow:0 12px 25px rgba(236,72,153,0.5);
+}
+
+/* Section & ticker */
+.section{display:none;}
+.section.active{display:block;}
+.public-ticker{
+  height:150px;
+  overflow:hidden;
+  position:relative;
+  background:rgba(0,0,0,0.2);
+  border-radius:12px;
+  padding:10px;
+  color:#fff;
+  font-size:14px;
+  line-height:1.5em;
+}
+.public-ticker-content{
+  position:absolute; top:0; width:100%;
+}
+
+/* Info cards */
+.info-cards{
+  display:flex;
+  gap:15px;
+  flex-wrap:wrap;
+  margin-top:20px;
+}
+.info-card{
+  flex:1;
+  min-width:150px;
+  background: rgba(236,72,153,0.1);
+  border-radius:12px;
+  padding:15px;
+  text-align:center;
+  border:1px solid rgba(236,72,153,0.3);
+  box-shadow:0 0 15px rgba(236,72,153,0.2);
+  transition:0.3s;
+}
+.info-card:hover{
+  transform: translateY(-3px);
+  box-shadow:0 0 25px rgba(236,72,153,0.4);
+}
+.info-card h3{margin:0 0 8px 0;color:#ec4899;}
+.info-card p{margin:0;color:#fff;}
+</style>
+</head>
+<body>
+
+<div class="bubbles" id="bubbles"></div>
+
+<header>
+  <h1>Mikoseel Dashboard</h1>
+  <div class="menu-container">
+    <button class="menu-btn" id="menuBtn">☰</button>
+    <div class="menu-dropdown" id="menuDropdown">
+      <button id="logoutBtn">Déconnexion</button>
+      <a href="mailto:prestator@outlook.fr">Contacter nous</a>
+    </div>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" data-target="dashboard">Dashboard</button>
+  <button class="tab-btn" data-target="machines">Machines</button>
+  <button class="tab-btn" id="retraitBtn">Retrait</button>
+</div>
+
+<div class="container">
+  <!-- DASHBOARD -->
+  <div class="section active" id="dashboard">
+    <div class="card">
+      <h2>Solde</h2>
+      <p id="balance">0 FCFA</p>
+    </div>
+
+    <div class="card">
+      <h2>Historique des transactions</h2>
+      <ul id="history"><li>Aucune transaction pour le moment</li></ul>
+    </div>
+
+    <div class="card">
+      <h2>graph</h2>
+      <div style="position:relative; width:100%; height:250px; background:rgba(0,0,0,0.2); border-radius:12px; display:flex; align-items:center; justify-content:center;">
+        <img id="dashboardImage" src="image.jpg" alt="Votre image ici" style="max-width:100%; max-height:100%; opacity:0.5; border-radius:12px;">
+        <p style="position:absolute; color:#fff; text-align:center;"></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Activité Publique</h2>
+      <div class="public-ticker">
+        <div class="public-ticker-content" id="publicTickerContent"></div>
+      </div>
+    </div>
+
+    <div class="info-cards">
+      <div class="info-card">
+        <h3>Clé 1</h3>
+        <p>Clé 1 : Permet d’accéder à certaines fonctionnalités avancées. Elle est essentielle pour les utilisateurs expérimentés et donne accès à des informations détaillées sur les transactions et la gestion des packs.</p>
+      </div>
+      <div class="info-card">
+        <h3>Clé 2</h3>
+        <p>Clé 2 : Cette clé améliore la sécurité et permet d’activer des options supplémentaires comme le suivi en temps réel et la gestion des historiques détaillés.</p>
+      </div>
+      <div class="info-card">
+        <h3>Clé 3</h3>
+        <p>Clé 3 : Donne accès à des informations générales, des rapports et des visualisations pour suivre facilement l’activité globale et les performances de votre compte.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MACHINES -->
+  <div class="section" id="machines">
+    <div class="machine-grid" id="machineCards"></div>
+  </div>
+</div>
+
+<script>
+// Bulles
+function createBubbles(n=40){
+  const container=document.getElementById('bubbles');
+  for(let i=0;i<n;i++){
+    const b=document.createElement('div');
+    b.className='bubble';
+    const size=10+Math.random()*50;
+    b.style.width=b.style.height=size+'px';
+    b.style.left=Math.random()*100+'%';
+    const hue = 270 + Math.random()*30; 
+    b.style.background=`radial-gradient(circle at 30% 30%, hsla(${hue},80%,70%,0.6), hsla(${hue},80%,50%,0.1))`;
+    b.style.animationDuration=(5+Math.random()*15)+'s';
+    b.style.animationDelay=(Math.random()*5)+'s';
+    container.appendChild(b);
+  }
+}
+createBubbles();
+
+// Menu
+const menuBtn=document.getElementById("menuBtn");
+const menuDropdown=document.getElementById("menuDropdown");
+menuBtn.onclick=()=>menuDropdown.style.display=menuDropdown.style.display==="block"?"none":"block";
+document.addEventListener("click",e=>{
+  if(!menuBtn.contains(e.target)&&!menuDropdown.contains(e.target)) menuDropdown.style.display="none";
+});
+
+// Déconnexion
+document.getElementById("logoutBtn").onclick=()=>{
+  window.location.href="index.html";
+};
+
+// Onglets
+const tabs=document.querySelectorAll(".tab-btn");
+const sections=document.querySelectorAll(".section");
+tabs.forEach(tab=>{
+  tab.addEventListener("click",()=>{
+    if(tab.id==="retraitBtn"){
+      window.location.href="deposit.html";
+      return;
+    }
+    tabs.forEach(t=>t.classList.remove("active"));
+    tab.classList.add("active");
+    sections.forEach(sec=>sec.classList.remove("active"));
+    document.getElementById(tab.dataset.target).classList.add("active");
+  });
+});
+
+// Machines
+const machines=[
+  {name:"Pack Bronze",min:2000,max:5000,gain:250,colorHue:270},
+  {name:"Pack Silver",min:5000,max:10000,gain:900,colorHue:280},
+  {name:"Pack Gold",min:10000,max:50000,gain:2000,colorHue:290},
+  {name:"Pack Diamond",min:50000,max:1500000,gain:12000,colorHue:300}
+];
+const machineCards=document.getElementById("machineCards");
+machines.forEach(m=>{
+  const div=document.createElement("div");
+  div.className="machine-card";
+  div.style.background=`hsl(${m.colorHue},50%,20%)`;
+  div.innerHTML=`<h3>${m.name}</h3><p>Invest: ${m.min.toLocaleString()} - ${m.max.toLocaleString()} FCFA<br>Gains/12h: ${m.gain.toLocaleString()} FCFA</p>`;
+  div.addEventListener("click",()=>{
+    window.location.href=`deposit.html?pack=${encodeURIComponent(m.name)}&min=${m.min}&max=${m.max}&gain=${m.gain}`;
+  });
+  machineCards.appendChild(div);
+});
+
+// Activité publique
+const totalActivities=5000;
+const tickerContent=document.getElementById("publicTickerContent");
+const activities=[];
+for(let i=0;i<totalActivities;i++){
+  const type=Math.random()>0.5?"Dépôt":"Retrait";
+  const amount=Math.floor(Math.random()*10000)+1000;
+  const phone="+229"+(Math.floor(60000000+Math.random()*39999999));
+  activities.push(`${type} de ${amount.toLocaleString()} FCFA - ${phone}`);
+}
+activities.forEach(a=>{
+  const p=document.createElement("p");
+  p.textContent=a;
+  tickerContent.appendChild(p);
+});
+let topPos=0;
+const speed=1;
+function scrollTicker(){
+  topPos-=speed;
+  if(Math.abs(topPos)>=tickerContent.offsetHeight){
+    topPos=tickerContent.parentElement.offsetHeight;
+  }
+  tickerContent.style.top=topPos+"px";
+  requestAnimationFrame(scrollTicker);
+}
+scrollTicker();
+</script>
+</body>
+</html>

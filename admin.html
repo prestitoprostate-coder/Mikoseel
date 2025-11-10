@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Admin — Mikoseel</title>
+<style>
+  :root{--bg:#f5fbff;--card:#fff;--primary:#2b9ebb;--muted:#6b7785}
+  body{margin:0;background:linear-gradient(180deg,var(--bg),#eaf6fb);font-family:Inter,Arial;color:#123}
+  header{padding:14px 18px;display:flex;justify-content:space-between;align-items:center}
+  .card{background:var(--card);padding:16px;border-radius:12px;margin:12px;box-shadow:0 8px 30px rgba(18,34,50,0.06)}
+  main{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px}
+  h2{margin:0 0 8px 0}
+  .list{display:flex;flex-direction:column;gap:10px}
+  .item{padding:12px;border-radius:10px;border:1px solid rgba(18,34,50,0.04);display:flex;justify-content:space-between;align-items:center}
+  .right{display:flex;gap:8px}
+  button{padding:8px 10px;border-radius:8px;border:none;cursor:pointer}
+  .ok{background:#2ecc71;color:#fff}
+  .ref{background:#ff6b6b;color:#fff}
+  .view{background:#f1f6f8}
+  .muted{color:var(--muted)}
+  footer{padding:12px;color:var(--muted)}
+  .loginBox{max-width:520px;margin:18px auto}
+  input{padding:10px;border-radius:8px;border:1px solid #e6f0f4;width:100%;margin-top:8px}
+</style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#2b9ebb,#7bd389);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700">AD</div>
+    <div>
+      <div style="font-weight:800">Admin — Mikoseel</div>
+      <div class="muted">Gestion locale des dépôts & retraits</div>
+    </div>
+  </div>
+  <div>
+    <button id="backBtn">Retour dashboard</button>
+  </div>
+</header>
+
+<main>
+  <div class="card">
+    <h2>Dépôts en attente</h2>
+    <div id="deposits" class="list"></div>
+  </div>
+
+  <div class="card">
+    <h2>Retraits en attente</h2>
+    <div id="withdraws" class="list"></div>
+  </div>
+
+  <div class="card" style="grid-column:1/3">
+    <h2>Utilisateurs</h2>
+    <div id="usersList" class="list"></div>
+  </div>
+</main>
+
+<footer>Actions écrivent directement dans localStorage (clé : <code>bank_app_data_v1</code>).</footer>
+
+<script>
+const STORAGE_KEY = 'bank_app_data_v1';
+function loadData(){ return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') || {}; }
+function saveData(d){ localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
+
+document.getElementById('backBtn').onclick = ()=>{ window.location.href='dashboard.html'; };
+
+function render(){
+  const data = loadData();
+  const depEl = document.getElementById('deposits');
+  const wEl = document.getElementById('withdraws');
+  const uEl = document.getElementById('usersList');
+  depEl.innerHTML=''; wEl.innerHTML=''; uEl.innerHTML='';
+
+  (data.pendingDeposits || []).forEach((pd, idx)=>{
+    const it = document.createElement('div'); it.className='item';
+    it.innerHTML = `<div>
+      <div><strong>${pd.email}</strong> — ${pd.account}</div>
+      <div class="muted">Montant: ${pd.tx.amount.toLocaleString()} FCFA • ${pd.tx.date} • Tx:${pd.tx.txId}</div>
+      <div class="muted">Phone généré: ${pd.tx.phoneGenerated || '—'}</div>
+    </div>
+    <div class="right">
+      <button class="ok" onclick="approveDeposit(${idx})">Approuver</button>
+      <button class="ref" onclick="refuseDeposit(${idx})">Refuser</button>
+      <button class="view" onclick="viewTx('deposit',${idx})">Voir</button>
+    </div>`;
+    depEl.appendChild(it);
+  });
+
+  (data.pendingWithdraws || []).forEach((pw, idx)=>{
+    const it = document.createElement('div'); it.className='item';
+    it.innerHTML = `<div>
+      <div><strong>${pw.email}</strong> — ${pw.account}</div>
+      <div class="muted">Montant: ${pw.tx.amount.toLocaleString()} FCFA • ${pw.tx.date} • Tx:${pw.tx.txId}</div>
+      <div class="muted">Phone généré: ${pw.tx.phoneGenerated || '—'}</div>
+    </div>
+    <div class="right">
+      <button class="ok" onclick="approveWithdraw(${idx})">Approuver</button>
+      <button class="ref" onclick="refuseWithdraw(${idx})">Refuser</button>
+      <button class="view" onclick="viewTx('withdraw',${idx})">Voir</button>
+    </div>`;
+    wEl.appendChild(it);
+  });
+
+  (data.users || []).forEach(u=>{
+    const it = document.createElement('div'); it.className='item';
+    it.innerHTML = `<div><strong>${u.email}</strong> • ${u.accountNumber}</div><div class="muted">Solde: ${ (u.balance||0).toLocaleString() } FCFA • ${ (u.history||[]).length } tx</div><div class="right"><button onclick="inspectUser('${u.email}')">Inspecter</button></div>`;
+    uEl.appendChild(it);
+  });
+}
+render();
+
+/* Approve / refuse */
+function approveDeposit(index){
+  const data = loadData();
+  const item = data.pendingDeposits.splice(index,1)[0];
+  if(!item){ alert('Introuvable'); return; }
+  const user = data.users.find(u=>u.email===item.email);
+  if(!user){ alert('Utilisateur introuvable'); return; }
+  // add amount to user balance and mark tx validated
+  user.balance = (user.balance||0) + item.tx.amount;
+  // find tx in user's history and update
+  user.history = user.history || [];
+  const tx = user.history.find(t=>t.txId === item.tx.txId);
+  if(tx) tx.status = 'validé';
+  saveData(data);
+  render();
+  alert('Dépôt approuvé et solde mis à jour.');
+}
+
+function refuseDeposit(index){
+  const data = loadData();
+  const item = data.pendingDeposits.splice(index,1)[0];
+  if(!item) return;
+  const user = data.users.find(u=>u.email===item.email);
+  if(user){
+    user.history = user.history || [];
+    const tx = user.history.find(t=>t.txId === item.tx.txId);
+    if(tx) tx.status = 'refusé';
+  }
+  saveData(data);
+  render();
+}
+
+function approveWithdraw(index){
+  const data = loadData();
+  const item = data.pendingWithdraws.splice(index,1)[0];
+  if(!item){ alert('Introuvable'); return; }
+  const user = data.users.find(u=>u.email===item.email);
+  if(!user){ alert('Utilisateur introuvable'); return; }
+  if((user.balance||0) < item.tx.amount){
+    if(!confirm('Solde insuffisant. Forcer l\'approbation ?')){ // allow manual override
+      data.pendingWithdraws.splice(index,0,item); saveData(data); return;
+    }
+  }
+  user.balance = (user.balance||0) - item.tx.amount;
+  user.history = user.history || [];
+  const tx = user.history.find(t=>t.txId === item.tx.txId);
+  if(tx) tx.status = 'validé';
+  saveData(data);
+  render();
+  alert('Retrait approuvé.');
+}
+
+function refuseWithdraw(index){
+  const data = loadData();
+  const item = data.pendingWithdraws.splice(index,1)[0];
+  if(item){
+    const user = data.users.find(u=>u.email===item.email);
+    if(user){
+      user.history = user.history || [];
+      const tx = user.history.find(t=>t.txId === item.tx.txId);
+      if(tx) tx.status = 'refusé';
+    }
+  }
+  saveData(data);
+  render();
+}
+
+function viewTx(type, idx){
+  const data = loadData();
+  const item = (type==='deposit' ? data.pendingDeposits[idx] : data.pendingWithdraws[idx]);
+  if(!item) return alert('Introuvable');
+  alert(`TxID: ${item.tx.txId}\nEmail: ${item.email}\nMontant: ${item.tx.amount}\nPhone: ${item.tx.phoneGenerated || '—'}\nDate: ${item.tx.date}\nStatus: ${item.tx.status}`);
+}
+
+function inspectUser(email){
+  const data = loadData();
+  const u = data.users.find(x=>x.email===email);
+  if(!u) return alert('Introuvable');
+  const history = (u.history||[]).map(h=>`${h.date} • ${h.type} • ${h.amount} FCFA • ${h.txId} • ${h.status}`).join('\n');
+  alert(`Utilisateur: ${u.email}\nCompte: ${u.accountNumber}\nSolde: ${(u.balance||0).toLocaleString()} FCFA\n\nHistorique:\n${history || '—'}`);
+}
+
+/* react to storage changes */
+window.addEventListener('storage', (e)=>{ if(e.key===STORAGE_KEY) render(); });
+
+</script>
+</body>
+</html>
