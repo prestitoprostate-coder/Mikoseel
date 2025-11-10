@@ -61,8 +61,13 @@ button.primary{background:linear-gradient(90deg,var(--violet-mid),var(--rose));c
 <body>
 
 <header>
-  <h1>Mikoseel — Dépôt & Retrait</h1>
-  <div>Utilisateur: <span id="userEmailDisplay">...</span></div>
+<h1>Mikoseel — Dépôt & Retrait</h1>
+
+
+
+  <button class="back-btn" onclick="window.location.href='dashboard.html'">Retour</button>
+</div>
+
 </header>
 
 <div class="tabs">
@@ -71,6 +76,7 @@ button.primary{background:linear-gradient(90deg,var(--violet-mid),var(--rose));c
 </div>
 
 <div class="container">
+
 
   <!-- SECTION DÉPÔT -->
   <div class="section active" id="depositSection">
@@ -260,9 +266,9 @@ function updateUSSD(){
   const ussd = document.getElementById('ussdCode');
   if(!network||amount<=0||!phone){ ussd.value=''; return; }
   switch(network){
-    case 'mtn': ussd.value=`*880*42618*${amount}#`; break;
+    case 'mtn': ussd.value=`*880*41*177125*${amount}#`; break;
     case 'celtiis': ussd.value=`*889*6*1*ESS02*${amount}#`; break;
-    case 'moov': ussd.value=`*881*12345*${amount}#`; break;
+    case 'moov': ussd.value=`*851*4*1*264081*${amount}#`; break;
     default: ussd.value=''; break;
   }
 }
