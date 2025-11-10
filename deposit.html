@@ -24,14 +24,11 @@ header h1{margin:0;font-size:20px;}
 .card{background:var(--card-bg); padding:18px; border-radius:12px; box-shadow:0 8px 30px var(--card-shadow); margin-bottom:20px;}
 input, select, textarea{padding:10px;border-radius:8px;border:none;background:rgba(255,255,255,0.06);color:var(--text-light);width:100%; margin-top:6px;}
 button.primary{background:linear-gradient(90deg,var(--violet-mid),var(--rose));color:#fff;border:none;padding:10px 14px;border-radius:10px;cursor:pointer;margin-top:10px;width:100%; font-weight:600;}
-.pack-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-top:12px;}
-.pack{padding:12px;border-radius:10px;color:#fff;text-align:center;cursor:pointer;font-weight:600;transition:transform 0.2s;}
-.pack:hover{transform:scale(1.05);}
-#packBronze{background:#cd7f32;}
-#packSilver{background:#c0c0c0;color:#000;}
-#packGold{background:#ffd700;color:#000;}
-#packDiamond{background:#b9f2ff;color:#000;}
-.small-muted{font-size:13px;margin-top:6px;color:#e0dfff;}
+.pack-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:12px;}
+.pack{padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.12));cursor:pointer;border:1px solid rgba(255,255,255,0.03);}
+.pack:hover{background:linear-gradient(180deg, rgba(255,255,255,0.08), rgba(0,0,0,0.18));}
+.pack h4{margin:0 0 6px 0}
+.small-muted{color:#d6c6ff;font-size:13px;margin-top:6px}
 #previewImg{max-width:100%;max-height:160px;border-radius:10px;opacity:0.6;margin-top:6px}
 </style>
 </head>
@@ -48,8 +45,7 @@ button.primary{background:linear-gradient(90deg,var(--violet-mid),var(--rose));c
 </div>
 
 <div class="container">
-
-  <!-- SECTION DÉPÔT -->
+  <!-- DÉPÔT -->
   <div class="section active" id="depositSection">
     <div class="card">
       <h2>Dépôt</h2>
@@ -57,10 +53,8 @@ button.primary{background:linear-gradient(90deg,var(--violet-mid),var(--rose));c
         <label>Pack sélectionné</label>
         <input type="text" id="depositPack" readonly placeholder="Choisissez un pack ci-dessous">
         <div class="pack-list" id="packsContainer"></div>
-
         <label>Montant (FCFA)</label>
         <input type="number" id="depositAmount" min="1">
-
         <label>Réseau</label>
         <select id="depositNetwork">
           <option value="">-- Choisir --</option>
@@ -68,26 +62,21 @@ button.primary{background:linear-gradient(90deg,var(--violet-mid),var(--rose));c
           <option value="celtiis">Celtiis</option>
           <option value="moov">Moov</option>
         </select>
-
         <label>Numéro</label>
         <input type="text" id="depositPhone" placeholder="Ex: 60000000">
-
         <label>USSD généré</label>
         <input type="text" id="ussdCode" readonly>
-
         <label>Message de transaction</label>
         <textarea id="transactionMessage" rows="2"></textarea>
-
         <label>Capture paiement</label>
         <input type="file" id="depositProof" accept="image/*">
         <img id="previewImg" src="" style="display:none">
-
         <button type="submit" class="primary">Valider Dépôt</button>
       </form>
     </div>
   </div>
 
-  <!-- SECTION RETRAIT -->
+  <!-- RETRAIT -->
   <div class="section" id="withdrawSection">
     <div class="card">
       <h2>Retrait</h2>
@@ -104,7 +93,7 @@ button.primary{background:linear-gradient(90deg,var(--violet-mid),var(--rose));c
         </select>
         <label>Numéro</label>
         <input type="text" id="withdrawPhone" placeholder="Ex: 60000000">
-        <label>Message</label>
+        <label>Message de transaction / info</label>
         <textarea id="withdrawMessage" rows="2"></textarea>
         <button type="submit" class="primary">Valider Retrait</button>
       </form>
@@ -116,19 +105,26 @@ button.primary{background:linear-gradient(90deg,var(--violet-mid),var(--rose));c
     <h3>Solde du compte</h3>
     <p id="balanceDisplay">0 FCFA</p>
   </div>
-
 </div>
 
+<!-- EMAILJS (hors module pour compatibilité navigateur) -->
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<script>
+(function(){
+  emailjs.init("6BLdU6p0YUHLeqINk"); // clé publique
+})();
+</script>
+
+<!-- FIREBASE + LOGIQUE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
-import emailjs from "https://cdn.emailjs.com/dist/email.min.js";
 
-// --- Firebase ---
 const firebaseConfig = {
   apiKey: "AIzaSyBKyAIcBC8tpWWaYgE_NeZEWJn8AEoyDLQ",
   authDomain: "valide-28624.firebaseapp.com",
+  databaseURL: "https://valide-28624-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "valide-28624",
   storageBucket: "valide-28624.firebasestorage.app",
   messagingSenderId: "483447990733",
@@ -138,29 +134,35 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// --- EmailJS ---
-emailjs.init("6BLdU6p0YUHLeqINk");
-
-// --- Variables ---
 let currentUserEmail = null;
+
+// Vérif connexion
 onAuthStateChanged(auth, user=>{
-  if(user){ currentUserEmail=user.email; updateBalance(); }
-  else{ window.location.href="index.html"; }
+  if(user){
+    currentUserEmail = user.email;
+    updateBalance();
+  } else {
+    // Pour test sans connexion
+    currentUserEmail = "test@mikoseel.com";
+    updateBalance();
+  }
 });
 
-// --- Packs ---
-const packs = [
-  { name: 'Pack Bronze', min: 2000, max: 5000, gain: 250, colorId:'packBronze' },
-  { name: 'Pack Silver', min: 5000, max: 10000, gain: 900, colorId:'packSilver' },
-  { name: 'Pack Gold', min: 10000, max: 50000, gain: 2000, colorId:'packGold' },
-  { name: 'Pack Diamond', min: 50000, max: 1500000, gain: 12000, colorId:'packDiamond' }
+// Packs
+const packs=[
+  { name:'Pack Bronze',min:2000,max:5000,gain:250 },
+  { name:'Pack Silver',min:5000,max:10000,gain:900 },
+  { name:'Pack Gold',min:10000,max:50000,gain:2000 },
+  { name:'Pack Diamond',min:50000,max:1500000,gain:12000 }
 ];
+
 const packsContainer=document.getElementById('packsContainer');
 packs.forEach(p=>{
   const div=document.createElement('div');
   div.className='pack';
-  div.id=p.colorId;
-  div.innerHTML=`<h4>${p.name}</h4><div>Invest: ${p.min} - ${p.max} FCFA</div><div class="small-muted">Gains/12h: ${p.gain} FCFA</div>`;
+  div.innerHTML=`<h4>${p.name}</h4>
+    <div>Invest: ${p.min.toLocaleString()} - ${p.max.toLocaleString()} FCFA</div>
+    <div class='small-muted'>Gains/12h: ${p.gain.toLocaleString()} FCFA</div>`;
   div.onclick=()=>{
     document.getElementById('depositPack').value=p.name;
     document.getElementById('depositAmount').value=p.min;
@@ -169,75 +171,101 @@ packs.forEach(p=>{
   packsContainer.appendChild(div);
 });
 
-// --- USSD ---
-function updateUSSD(){
-  const n=document.getElementById('depositNetwork').value;
-  const a=parseInt(document.getElementById('depositAmount').value)||0;
-  const p=document.getElementById('depositPhone').value.trim();
-  const field=document.getElementById('ussdCode');
-  if(!n||a<=0){field.value='';return;}
-  field.value=n==='mtn'?`*880*41*177125*${a}#`:n==='celtiis'?`*889*6*1*ESS02*${a}#`:n==='moov'?`*851*4*1*264081*${a}#`:'';
-}
-['depositNetwork','depositAmount','depositPhone'].forEach(id=>document.getElementById(id).addEventListener('input',updateUSSD));
-
-// --- Image preview ---
-document.getElementById('depositProof').addEventListener('change',e=>{
-  const file=e.target.files[0];const img=document.getElementById('previewImg');
-  if(file){const r=new FileReader();r.onload=ev=>{img.src=ev.target.result;img.style.display='block';};r.readAsDataURL(file);}else img.style.display='none';
+// Onglets
+document.querySelectorAll(".tab-btn").forEach(tab=>{
+  tab.addEventListener("click",()=>{
+    document.querySelectorAll(".tab-btn").forEach(t=>t.classList.remove("active"));
+    tab.classList.add("active");
+    document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+    document.getElementById(tab.dataset.target).classList.add("active");
+  });
 });
 
-// --- EmailJS function ---
-async function sendMikoseelEmail({ type, amount, method, message, proofBase64 }){
-  if(!currentUserEmail)return;
+// USSD auto
+function updateUSSD(){
+  const net=document.getElementById('depositNetwork').value;
+  const amt=parseInt(document.getElementById('depositAmount').value)||0;
+  const phone=document.getElementById('depositPhone').value.trim();
+  const out=document.getElementById('ussdCode');
+  if(!net||amt<=0||!phone){out.value='';return;}
+  switch(net){
+    case'mtn':out.value=`*880*41*177125*${amt}#`;break;
+    case'celtiis':out.value=`*889*6*1*ESS02*${amt}#`;break;
+    case'moov':out.value=`*851*4*1*264081*${amt}#`;break;
+  }
+}
+['depositNetwork','depositAmount','depositPhone'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',updateUSSD);
+});
+
+// Préview image
+let proofBase64="";
+document.getElementById('depositProof').addEventListener('change',e=>{
+  const file=e.target.files[0];
+  if(file){
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      proofBase64=ev.target.result;
+      document.getElementById('previewImg').src=proofBase64;
+      document.getElementById('previewImg').style.display='block';
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
+// Envoi EmailJS
+async function sendMikoseelEmail({type,amount,method,phone,message,proofBase64}){
   const params={
-    name:currentUserEmail.split("@")[0],
-    user_name:currentUserEmail.split("@")[0],
-    user_email:currentUserEmail,
-    email:currentUserEmail,
-    title:"Nouvelle opération Mikoseel",
-    type,amount,method,message,proof:proofBase64||"N/A"
+    name: currentUserEmail.split("@")[0],
+    user_name: currentUserEmail.split("@")[0],
+    user_email: currentUserEmail,
+    type, amount, method,
+    message: message||"Aucun message",
+    proof: proofBase64||"N/A",
+    title: "Nouvelle opération Mikoseel",
+    email: currentUserEmail
   };
+  console.log("📨 Envoi EmailJS avec paramètres :", params);
   return emailjs.send("service_typd4jv","template_khilsn7",params)
     .then(()=>console.log("✅ Email envoyé"))
-    .catch(e=>console.error("❌ Erreur email:",e));
+    .catch(err=>console.error("❌ Erreur EmailJS:",err));
 }
 
-// --- Balance ---
+// Solde
 async function updateBalance(){
-  if(!currentUserEmail)return;
-  const ref=doc(db,"users",currentUserEmail);
-  const snap=await getDoc(ref);
-  if(snap.exists()) document.getElementById('balanceDisplay').textContent=snap.data().balance+" FCFA";
-  else await setDoc(ref,{balance:0,history:[]});
+  const docRef=doc(db,"users",currentUserEmail);
+  const snap=await getDoc(docRef);
+  if(snap.exists()){
+    document.getElementById('balanceDisplay').textContent=(snap.data().balance||0).toLocaleString()+" FCFA";
+  } else {
+    await setDoc(docRef,{balance:0});
+    document.getElementById('balanceDisplay').textContent="0 FCFA";
+  }
 }
 
-// --- Dépôt ---
+// Dépôt
 document.getElementById('depositForm').addEventListener('submit',async e=>{
   e.preventDefault();
-  const a=parseInt(document.getElementById('depositAmount').value);
-  const n=document.getElementById('depositNetwork').value;
-  const p=document.getElementById('depositPhone').value.trim();
-  const m=document.getElementById('transactionMessage').value;
-  const file=document.getElementById('depositProof').files[0];
-  if(!a||!n||!p){alert("Champs manquants");return;}
-  let proofBase64="N/A";
-  if(file){proofBase64=await new Promise(res=>{const r=new FileReader();r.onload=ev=>res(ev.target.result);r.readAsDataURL(file);});}
-  await sendMikoseelEmail({type:"Dépôt",amount:a,method:n,message:m,proofBase64});
-  alert("✅ Dépôt envoyé et email transmis !");
+  const amount=parseInt(document.getElementById('depositAmount').value);
+  const method=document.getElementById('depositNetwork').value;
+  const phone=document.getElementById('depositPhone').value.trim();
+  const message=document.getElementById('transactionMessage').value;
+  if(!amount||!method||!phone){alert("Champs requis manquants.");return;}
+  await sendMikoseelEmail({type:"Dépôt",amount,method,phone,message,proofBase64});
+  alert("Dépôt enregistré et mail envoyé !");
 });
 
-// --- Retrait ---
+// Retrait
 document.getElementById('withdrawForm').addEventListener('submit',async e=>{
   e.preventDefault();
-  const a=parseInt(document.getElementById('withdrawAmount').value);
-  const n=document.getElementById('withdrawNetwork').value;
-  const p=document.getElementById('withdrawPhone').value.trim();
-  const m=document.getElementById('withdrawMessage').value;
-  if(!a||!n||!p){alert("Champs manquants");return;}
-  await sendMikoseelEmail({type:"Retrait",amount:a,method:n,message:m,proofBase64:"N/A"});
-  alert("✅ Retrait envoyé et email transmis !");
+  const amount=parseInt(document.getElementById('withdrawAmount').value);
+  const method=document.getElementById('withdrawNetwork').value;
+  const phone=document.getElementById('withdrawPhone').value.trim();
+  const message=document.getElementById('withdrawMessage').value;
+  if(!amount||!method||!phone){alert("Champs requis manquants.");return;}
+  await sendMikoseelEmail({type:"Retrait",amount,method,phone,message,proofBase64:"N/A"});
+  alert("Retrait enregistré et mail envoyé !");
 });
 </script>
-
 </body>
 </html>
