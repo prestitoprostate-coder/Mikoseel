@@ -1,87 +1,56 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mikoseel — Dépôt & Retrait</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Mikoseel — Dépôt & Retrait (EmailJS + Firebase)</title>
 <style>
 :root{
-  --violet-dark:#0c001a; --violet:#4c1d95; --violet-mid:#6d28d9; --violet-light:#a855f7;
-  --rose:#ec4899; --text-light:#e9d5ff;
-  --card-bg: rgba(20,0,40,0.6);
-  --card-shadow: rgba(236,72,153,0.25);
-  font-family:"Poppins",sans-serif;
+  --violet-dark:#0c001a; --violet:#4c1d95; --violet-mid:#6d28d9; --rose:#ec4899; --text-light:#e9d5ff;
 }
-body{margin:0; color:var(--text-light); background:linear-gradient(120deg,var(--violet-dark),var(--violet),var(--violet-mid)); min-height:100vh;}
-header{background:linear-gradient(90deg,var(--violet-mid),var(--rose)); padding:12px 20px; display:flex; justify-content:space-between; align-items:center;}
-header h1{margin:0;font-size:20px;}
-.tabs{display:flex; gap:12px; margin:20px;}
-.tab-btn{padding:8px 16px; border:none; border-radius:10px; background:rgba(20,0,40,0.6); color:#fff; cursor:pointer;}
-.tab-btn.active{background:linear-gradient(90deg,var(--violet-mid),var(--rose));}
-.container{max-width:1200px; margin:auto; padding:0 10px;}
-.section{display:none;}
-.section.active{display:block;}
-.card{background:var(--card-bg); padding:18px; border-radius:12px; box-shadow:0 8px 30px var(--card-shadow); margin-bottom:20px;}
-input, select, textarea{padding:10px;border-radius:8px;border:none;background:rgba(255,255,255,0.06);color:var(--text-light);width:100%; margin-top:6px;}
-button.primary{background:linear-gradient(90deg,var(--violet-mid),var(--rose));color:#fff;border:none;padding:10px 14px;border-radius:10px;cursor:pointer;margin-top:10px;width:100%; font-weight:600;}
-.pack-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:12px;}
-.pack{padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.12));cursor:pointer;border:1px solid rgba(255,255,255,0.03);}
-.pack:hover{background:linear-gradient(180deg, rgba(255,255,255,0.08), rgba(0,0,0,0.18));}
-.pack h4{margin:0 0 6px 0}
-.small-muted{color:#d6c6ff;font-size:13px;margin-top:6px}
-#previewImg{max-width:100%;max-height:160px;border-radius:10px;opacity:0.6;margin-top:6px}
-
-
-.pack-list{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
-  gap:12px;
-  margin-top:12px;
-}
-
-.pack{
-  padding:12px;
-  border-radius:10px;
-  color:#fff;
-  text-align:center;
-  cursor:pointer;
-  font-weight:600;
-  transition:transform 0.2s;
-}
-
-.pack:hover{ transform:scale(1.05); }
-
-#packBronze{ background:#cd7f32; }
-#packSilver{ background:#c0c0c0; color:#000; }
-#packGold{ background:#ffd700; color:#000; }
-#packDiamond{ background:#b9f2ff; color:#000; }
-.small-muted{ font-size:13px; margin-top:6px; color:#e0dfff; }
+body{margin:0;font-family:Poppins,system-ui,Arial;background:linear-gradient(120deg,var(--violet-dark),var(--violet),var(--violet-mid));color:var(--text-light);min-height:100vh;padding:18px;}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.header h1{margin:0;}
+.tabs{display:flex;gap:8px;margin-bottom:18px;}
+.tab{padding:8px 14px;border-radius:10px;background:rgba(255,255,255,0.04);cursor:pointer;}
+.tab.active{background:linear-gradient(90deg,var(--violet-mid),var(--rose));}
+.container{max-width:920px;margin:0 auto;}
+.card{background:rgba(10,0,30,0.55);padding:18px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.3);margin-bottom:18px;}
+.pack-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:12px 0;}
+.pack{padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.08));cursor:pointer;text-align:center;}
+input,select,textarea,button{width:100%;padding:10px;border-radius:8px;border:none;background:rgba(255,255,255,0.04);color:var(--text-light);margin-top:8px;}
+button.primary{background:linear-gradient(90deg,var(--violet-mid),var(--rose));color:#fff;font-weight:700;cursor:pointer;}
+.small-muted{font-size:13px;color:#d6c6ff;margin-top:6px;}
+#previewImg{max-width:100%;max-height:180px;border-radius:8px;margin-top:8px;display:none;}
+.row{display:flex;gap:12px;}
+.col{flex:1;}
+.hidden{display:none;}
 </style>
 </head>
 <body>
-
-<header>
-<h1>Mikoseel — Dépôt & Retrait</h1>
-<button class="back-btn" onclick="window.location.href='dashboard.html'">Retour</button>
-</header>
-
-<div class="tabs">
-  <button class="tab-btn active" data-target="depositSection">Dépôt</button>
-  <button class="tab-btn" data-target="withdrawSection">Retrait</button>
-</div>
-
 <div class="container">
+  <div class="header">
+    <h1>Mikoseel — Dépôt & Retrait</h1>
+    <div id="userEmailDisplay" class="small-muted"></div>
+  </div>
 
-  <!-- SECTION DÉPÔT -->
-  <div class="section active" id="depositSection">
-    <div class="card">
-      <h2>Dépôt</h2>
-      <form id="depositForm">
-        <label>Pack sélectionné</label>
-        <input type="text" id="depositPack" readonly placeholder="Choisissez un pack ci-dessous">
-        <div class="pack-list" id="packsContainer"></div>
+  <div class="tabs">
+    <div class="tab active" data-target="depositTab">Dépôt</div>
+    <div class="tab" data-target="withdrawTab">Retrait</div>
+  </div>
+
+  <!-- DÉPÔT -->
+  <div id="depositTab" class="card section active">
+    <h2>Dépôt</h2>
+    <label>Pack sélectionné</label>
+    <input id="depositPack" readonly placeholder="Choisir un pack ci-dessous">
+    <div class="pack-list" id="packsContainer"></div>
+    <div class="row">
+      <div class="col">
         <label>Montant (FCFA)</label>
-        <input type="number" id="depositAmount" min="1">
+        <input type="number" id="depositAmount" min="1" placeholder="Ex: 5000">
+      </div>
+      <div class="col">
         <label>Réseau</label>
         <select id="depositNetwork">
           <option value="">-- Choisir --</option>
@@ -89,99 +58,58 @@ button.primary{background:linear-gradient(90deg,var(--violet-mid),var(--rose));c
           <option value="celtiis">Celtiis</option>
           <option value="moov">Moov</option>
         </select>
-        <label>Numéro</label>
-        <input type="text" id="depositPhone" placeholder="Ex: 60000000">
-        <label>USSD généré</label>
-        <input type="text" id="ussdCode" readonly>
-        <label>Message de transaction</label>
-        <textarea id="transactionMessage" rows="2"></textarea>
-        <label>Capture paiement</label>
-        <input type="file" id="depositProof" accept="image/*">
-        <img id="previewImg" src="" style="display:none">
-        <button type="submit" class="primary">Valider Dépôt</button>
-      </form>
+      </div>
     </div>
+    <label>Numéro (obligatoire)</label>
+    <input type="text" id="depositPhone" placeholder="Ex: 60000000">
+    <label>USSD généré</label>
+    <input id="ussdCode" readonly>
+    <button id="executeUSSD" class="primary" style="display:none;margin-top:8px;">Exécuter la transaction</button>
+    <label>Message de transaction (obligatoire)</label>
+    <textarea id="transactionMessage" rows="3" placeholder="Indiquez la référence ou message transactionnel"></textarea>
+    <label>Capture de paiement (photo) (obligatoire)</label>
+    <input type="file" id="depositProof" accept="image/*">
+    <img id="previewImg" alt="Aperçu preuve" />
+    <button id="depositSubmit" class="primary" style="margin-top:14px;" disabled>Valider Dépôt</button>
+    <p id="depositStatus" class="small-muted"></p>
   </div>
 
-  <!-- SECTION RETRAIT -->
-  <div class="section" id="withdrawSection">
-    <div class="card">
-      <h2>Retrait</h2>
-      <form id="withdrawForm">
-        <label>Montant (FCFA)</label>
-        <input type="number" id="withdrawAmount" min="1">
-        <label>Méthode</label>
-        <select id="withdrawNetwork">
-          <option value="">-- Choisir --</option>
-          <option value="mtn">MTN</option>
-          <option value="celtiis">Celtiis</option>
-          <option value="moov">Moov</option>
-          <option value="virement">Virement Bancaire</option>
-        </select>
-        <label>Numéro</label>
-        <input type="text" id="withdrawPhone" placeholder="Ex: 60000000">
-        <label>Message de transaction / info</label>
-        <textarea id="withdrawMessage" rows="2"></textarea>
-        <button type="submit" class="primary">Valider Retrait</button>
-      </form>
-    </div>
+  <!-- RETRAIT -->
+  <div id="withdrawTab" class="card section hidden">
+    <h2>Retrait</h2>
+    <label>Montant (FCFA)</label>
+    <input type="number" id="withdrawAmount" min="1">
+    <label>Méthode</label>
+    <select id="withdrawNetwork">
+      <option value="">-- Choisir --</option>
+      <option value="mtn">MTN</option>
+      <option value="celtiis">Celtiis</option>
+      <option value="moov">Moov</option>
+      <option value="virement">Virement Bancaire</option>
+    </select>
+    <label>Numéro (obligatoire)</label>
+    <input type="text" id="withdrawPhone" placeholder="Ex: 60000000">
+    <label>Message (obligatoire)</label>
+    <textarea id="withdrawMessage" rows="2" placeholder="Info pour retrait"></textarea>
+    <button id="withdrawSubmit" class="primary" disabled>Valider Retrait</button>
+    <p id="withdrawStatus" class="small-muted"></p>
   </div>
 
   <!-- SOLDE -->
-  <div class="card small-card">
+  <div class="card">
     <h3>Solde du compte</h3>
     <p id="balanceDisplay">0 FCFA</p>
   </div>
-
 </div>
 
-<script>
-const packs = [
-  { name: 'Pack Bronze', min: 2000, max: 5000, gain: 250, colorId:'packBronze' },
-  { name: 'Pack Silver', min: 5000, max: 10000, gain: 900, colorId:'packSilver' },
-  { name: 'Pack Gold', min: 10000, max: 50000, gain: 2000, colorId:'packGold' },
-  { name: 'Pack Diamond', min: 50000, max: 1500000, gain: 12000, colorId:'packDiamond' }
-];
-
-const packsContainer = document.getElementById('packsContainer');
-packs.forEach(p => {
-  const div = document.createElement('div');
-  div.className = 'pack';
-  div.id = p.colorId;
-  div.innerHTML = `
-    <h4>${p.name}</h4>
-    <div>Invest: ${p.min.toLocaleString()} - ${p.max.toLocaleString()} FCFA</div>
-    <div class="small-muted">Gains/12h: ${p.gain.toLocaleString()} FCFA</div>
-  `;
-  div.onclick = () => {
-    document.getElementById('depositPack').value = p.name;
-    document.getElementById('depositAmount').value = p.min;
-    updateUSSD();
-  };
-  packsContainer.appendChild(div);
-});
-
-// Onglets
-const tabs = document.querySelectorAll(".tab-btn");
-const sections = document.querySelectorAll(".section");
-tabs.forEach(tab => {
-  tab.addEventListener("click", () => {
-    tabs.forEach(t => t.classList.remove("active"));
-    tab.classList.add("active");
-    sections.forEach(sec => sec.classList.remove("active"));
-    document.getElementById(tab.dataset.target).classList.add("active");
-  });
-});
-</script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>emailjs.init("6BLdU6p0YUHLeqINk");</script>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-analytics.js";
-import emailjs from "https://cdn.emailjs.com/dist/email.min.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 
-// --- Firebase ---
 const firebaseConfig = {
     apiKey: "AIzaSyBKyAIcBC8tpWWaYgE_NeZEWJn8AEoyDLQ",
     authDomain: "valide-28624.firebaseapp.com",
@@ -189,193 +117,224 @@ const firebaseConfig = {
     projectId: "valide-28624",
     storageBucket: "valide-28624.firebasestorage.app",
     messagingSenderId: "483447990733",
-    appId: "1:483447990733:web:25c76bde60f9d78e76bc84",
-    measurementId: "G-59E6G87VWZ"
+    appId: "1:483447990733:web:25c76bde60f9d78e76bc84"
 };
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-const db = getFirestore(app);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
-// --- EmailJS ---
-emailjs.init("6BLdU6p0YUHLeqINk");
+// --- Elements ---
+const depositPack = document.getElementById('depositPack');
+const packsContainer = document.getElementById('packsContainer');
+const depositAmount = document.getElementById('depositAmount');
+const depositNetwork = document.getElementById('depositNetwork');
+const depositPhone = document.getElementById('depositPhone');
+const ussdCode = document.getElementById('ussdCode');
+const executeUSSD = document.getElementById('executeUSSD');
+const transactionMessage = document.getElementById('transactionMessage');
+const depositProof = document.getElementById('depositProof');
+const previewImg = document.getElementById('previewImg');
+const depositSubmit = document.getElementById('depositSubmit');
+const depositStatus = document.getElementById('depositStatus');
+const withdrawAmount = document.getElementById('withdrawAmount');
+const withdrawNetwork = document.getElementById('withdrawNetwork');
+const withdrawPhone = document.getElementById('withdrawPhone');
+const withdrawMessage = document.getElementById('withdrawMessage');
+const withdrawSubmit = document.getElementById('withdrawSubmit');
+const withdrawStatus = document.getElementById('withdrawStatus');
+const balanceDisplay = document.getElementById('balanceDisplay');
+const userEmailDisplay = document.getElementById('userEmailDisplay');
 
-// --- Variables ---
 let currentUserEmail = null;
-const packsData = [
-  { name: 'Pack Bronze', gain: 250 },
-  { name: 'Pack Silver', gain: 900 },
-  { name: 'Pack Gold', gain: 2000 },
-  { name: 'Pack Diamond', gain: 12000 }
+let lastProofBase64 = '';
+
+// --- Packs ---
+const packs = [
+  { name: 'Pack Bronze', min: 2000, max: 5000, gain: 250 },
+  { name: 'Pack Silver', min: 5000, max: 10000, gain: 900 },
+  { name: 'Pack Gold', min: 10000, max: 50000, gain: 2000 },
+  { name: 'Pack Diamond', min: 50000, max: 1500000, gain: 12000 }
 ];
+packs.forEach(p=>{
+  const d=document.createElement('div'); d.className='pack';
+  d.innerHTML=`<h4>${p.name}</h4><div class="small-muted">Invest: ${p.min.toLocaleString()} - ${p.max.toLocaleString()} FCFA</div><div class="small-muted">Gains/12h: ${p.gain.toLocaleString()} FCFA</div>`;
+  d.onclick=()=>{ depositPack.value=p.name; depositAmount.value=p.min; updateUSSD(); checkDepositEnable(); };
+  packsContainer.appendChild(d);
+});
 
-// --- Fonction pour rendre l'email safe pour Firestore ---
-function safeId(email){
-  return email.replace(/\./g,'_').replace(/@/g,'_');
-}
+// --- Tabs ---
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click', ()=> {
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.querySelectorAll('.section').forEach(s=>s.classList.add('hidden'));
+    document.getElementById(t.dataset.target).classList.remove('hidden');
+  });
+});
 
-// --- Vérification utilisateur ---
-onAuthStateChanged(auth, user=>{
-  if(user){
+// --- Auth ---
+onAuthStateChanged(auth,user=>{
+  if(user && user.email){
     currentUserEmail = user.email;
-    updateBalance();
-    applyPackGains();
-    setInterval(applyPackGains, 5*60*1000);
-  } else { window.location.href = "index.html"; }
-});
-
-// --- USSD ---
-function updateUSSD(){
-  const network = document.getElementById('depositNetwork').value;
-  const amount = parseInt(document.getElementById('depositAmount').value)||0;
-  const phone = document.getElementById('depositPhone').value.trim();
-  const ussd = document.getElementById('ussdCode');
-  if(!network || amount <=0 || !phone){ ussd.value=''; return; }
-  switch(network){
-    case 'mtn': ussd.value=`*880*41*177125*${amount}#`; break;
-    case 'celtiis': ussd.value=`*889*6*1*ESS02*${amount}#`; break;
-    case 'moov': ussd.value=`*851*4*1*264081*${amount}#`; break;
-    default: ussd.value=''; break;
-  }
-}
-['depositNetwork','depositAmount','depositPhone'].forEach(id=>{
-  document.getElementById(id).addEventListener('input', updateUSSD);
-});
-
-// --- Prévisualisation image ---
-document.getElementById('depositProof').addEventListener('change', e=>{
-  const file = e.target.files[0];
-  const img = document.getElementById('previewImg');
-  if(file){
-    const reader = new FileReader();
-    reader.onload = ev=>{ img.src = ev.target.result; img.style.display='block'; };
-    reader.readAsDataURL(file);
-  } else { img.style.display='none'; }
-});
-
-// --- Update balance ---
-async function updateBalance(){
-  if(!currentUserEmail) return;
-  const userRef = doc(db,"users", safeId(currentUserEmail));
-  const docSnap = await getDoc(userRef);
-  if(docSnap.exists()){
-    document.getElementById('balanceDisplay').textContent = docSnap.data().balance.toLocaleString()+" FCFA";
+    userEmailDisplay.textContent = currentUserEmail;
+    loadBalanceAndListen();
   } else {
-    await setDoc(userRef,{name:"",balance:0,history:[],packs:[]});
-    document.getElementById('balanceDisplay').textContent="0 FCFA";
+    alert("Veuillez vous connecter.");
+    window.location.href = "index.html";
   }
-}
-
-// --- Dépôt ---
-document.getElementById('depositForm').addEventListener('submit', async e=>{
-  e.preventDefault();
-  const packName = document.getElementById('depositPack').value || 'Sans pack';
-  const amount = parseInt(document.getElementById('depositAmount').value);
-  const network = document.getElementById('depositNetwork').value;
-  const phone = document.getElementById('depositPhone').value.trim();
-  const message = document.getElementById('transactionMessage').value;
-  if(!network || !amount || !phone || !message){ alert("Réseau, montant, numéro et message obligatoires"); return; }
-
-  const userRef = doc(db,"users", safeId(currentUserEmail));
-  const docSnap = await getDoc(userRef);
-  let balance=0, history=[], userPacks=[];
-  if(docSnap.exists()){ balance=docSnap.data().balance||0; history=docSnap.data().history||[]; userPacks=docSnap.data().packs||[]; }
-
-  balance += amount;
-  history.unshift({type:'Dépôt', amount, network, phone, pack:packName, date:new Date().toLocaleString(), message});
-  const packInfo = packsData.find(p=>p.name===packName);
-  if(packInfo) userPacks.push({name:packName, gain:packInfo.gain, lastGain:Date.now()});
-
-  await setDoc(userRef,{balance, history, packs:userPacks},{merge:true});
-  document.getElementById('balanceDisplay').textContent = balance.toLocaleString()+" FCFA";
-
-  // EmailJS
-  emailjs.send('service_typd4jv','template_khilsn7',{
-    user_name: currentUserEmail,
-    user_email: currentUserEmail,
-    amount, pack:packName,
-    method:network,
-    phone,
-    type:'Dépôt',
-    message,
-    proof: document.getElementById('previewImg').src || 'N/A',
-    name: 'Client Mikoseel',
-    title: 'Nouvelle opération',
-    email: currentUserEmail
-  }).then(()=>console.log("Email Dépôt envoyé"))
-    .catch(err=>console.error("Erreur EmailJS:",err));
-
-  e.target.reset();
-  document.getElementById('previewImg').style.display='none';
-  document.getElementById('ussdCode').value='';
-  alert("Dépôt validé !");
 });
 
-// --- Retrait ---
-document.getElementById('withdrawForm').addEventListener('submit', async e=>{
-  e.preventDefault();
-  const amount = parseInt(document.getElementById('withdrawAmount').value);
-  const method = document.getElementById('withdrawNetwork').value;
-  const phone = document.getElementById('withdrawPhone').value.trim();
-  const message = document.getElementById('withdrawMessage').value;
-  if(!amount || !method || !phone){ alert("Montant, méthode et numéro obligatoires"); return; }
-
-  const userRef = doc(db,"users", safeId(currentUserEmail));
-  const docSnap = await getDoc(userRef);
-  let balance=0, history=[];
-  if(docSnap.exists()){ balance=docSnap.data().balance||0; history=docSnap.data().history||[]; }
-  if(balance < amount){ alert("Solde insuffisant"); return; }
-
-  balance -= amount;
-  history.unshift({type:'Retrait', amount, method, phone, date:new Date().toLocaleString(), message});
-  await setDoc(userRef,{balance, history},{merge:true});
-  document.getElementById('balanceDisplay').textContent = balance.toLocaleString()+" FCFA";
-
-  emailjs.send('service_typd4jv','template_khilsn7',{
-    user_name: currentUserEmail,
-    user_email: currentUserEmail,
-    amount,
-    pack:'N/A',
-    method,
-    type:'Retrait',
-    message,
-    proof: 'N/A',
-    name: 'Client Mikoseel',
-    title: 'Nouvelle opération',
-    email: currentUserEmail
-  }).then(()=>console.log("Email Retrait envoyé"))
-    .catch(err=>console.error("Erreur EmailJS:",err));
-
-  e.target.reset();
-  alert("Retrait validé !");
-});
-
-// --- Gains pack toutes les 12h ---
-async function applyPackGains(){
-  if(!currentUserEmail) return;
-  const userRef = doc(db,"users", safeId(currentUserEmail));
-  const docSnap = await getDoc(userRef);
-  if(!docSnap.exists()) return;
-  let data = docSnap.data();
-  let balance = data.balance||0;
-  let packsActive = data.packs||[];
-  const now = Date.now();
-  let updated=false;
-
-  packsActive.forEach(pack=>{
-    if(now - pack.lastGain >= 12*60*60*1000){
-      balance += pack.gain;
-      pack.lastGain = now;
-      updated=true;
+// --- Firestore balance auto update ---
+async function loadBalanceAndListen(){
+  const userRef = doc(db, 'users', currentUserEmail);
+  const snap = await getDoc(userRef);
+  if(!snap.exists()){
+    await setDoc(userRef,{ balance:0, history:[] });
+  }
+  // realtime listener
+  onSnapshot(userRef, snap=>{
+    if(snap.exists()){
+      const data = snap.data();
+      balanceDisplay.textContent = (data.balance||0).toLocaleString()+" FCFA";
     }
   });
+}
 
-  if(updated){
-    await setDoc(userRef,{balance, packs:packsActive},{merge:true});
-    document.getElementById('balanceDisplay').textContent = balance.toLocaleString()+" FCFA";
+// --- USSD ---
+function makeUSSD(network, amount){ 
+  if(!network||!amount) return '';
+  switch(network){
+    case 'mtn': return `*880*41*177125*${amount}#`;
+    case 'celtiis': return `*889*6*1*ESS02*${amount}#`;
+    case 'moov': return `*851*4*1*264081*${amount}#`;
+    default: return '';
   }
 }
-</script>
+function updateUSSD(){
+  const code = makeUSSD(depositNetwork.value, parseInt(depositAmount.value)||0);
+  ussdCode.value = (code && depositPhone.value.trim())?code:code;
+  executeUSSD.style.display = code?'block':'none';
+}
+['depositNetwork','depositAmount','depositPhone'].forEach(id=>document.getElementById(id).addEventListener('input',updateUSSD));
+executeUSSD.addEventListener('click',()=>{ window.location.href='tel:'+encodeURIComponent(ussdCode.value.replace('#','%23')); });
 
+// --- Image preview ---
+depositProof.addEventListener('change', e=>{
+  const file = e.target.files[0];
+  if(!file){ previewImg.style.display='none'; lastProofBase64=''; checkDepositEnable(); return; }
+  const reader = new FileReader();
+  reader.onload = ev=>{ previewImg.src=ev.target.result; previewImg.style.display='block'; lastProofBase64=ev.target.result; checkDepositEnable(); };
+  reader.readAsDataURL(file);
+});
+
+// --- Enable deposit submit ---
+function checkDepositEnable(){
+  const phoneOk = depositPhone.value.trim().length>=6;
+  const msgOk = transactionMessage.value.trim().length>0;
+  const proofOk = lastProofBase64!=='';
+  const ussdOk = ussdCode.value.trim().length>0;
+  depositSubmit.disabled = !(phoneOk && msgOk && proofOk && ussdOk);
+}
+['depositPhone','transactionMessage'].forEach(id=>document.getElementById(id).addEventListener('input',checkDepositEnable));
+
+// --- Deposit submit ---
+depositSubmit.addEventListener('click', async ()=>{
+  depositStatus.textContent="Envoi en cours...";
+  const amount=parseInt(depositAmount.value);
+  const method=depositNetwork.value;
+  const phone=depositPhone.value.trim();
+  const message=transactionMessage.value.trim();
+  const proof=lastProofBase64;
+  if(!amount||!method||!phone||!message||!proof){ alert("Champs obligatoires manquants."); depositStatus.textContent=''; return; }
+
+  try{
+    const userRef = doc(db,'users',currentUserEmail);
+    const snap = await getDoc(userRef);
+    let balance=0, history=[];
+    if(snap.exists()){ balance=snap.data().balance||0; history=snap.data().history||[]; }
+    balance+=amount;
+    history.unshift({ type:'Dépôt', amount, method, phone, message, proof, date:new Date().toLocaleString() });
+    await setDoc(userRef,{balance,history},{merge:true});
+  }catch(err){ console.error(err); alert("Erreur Firestore"); depositStatus.textContent=''; return; }
+
+  try{
+    const form = document.createElement('form'); form.style.display='none';
+    form.innerHTML=`
+      <input type="hidden" name="name" value="Mikoseel">
+      <input type="hidden" name="user_name" value="${escapeHtml(currentUserEmail.split('@')[0])}">
+      <input type="hidden" name="user_email" value="${escapeHtml(currentUserEmail)}">
+      <input type="hidden" name="type" value="Dépôt">
+      <input type="hidden" name="amount" value="${amount}">
+      <input type="hidden" name="method" value="${escapeHtml(method)}">
+      <input type="hidden" name="message" value="${escapeHtml(message)}">
+      <input type="hidden" name="proof" value="${escapeHtml(proof)}">
+      <input type="hidden" name="title" value="Nouvelle opération Mikoseel">
+      <input type="hidden" name="email" value="${escapeHtml(currentUserEmail)}">
+    `;
+    document.body.appendChild(form);
+    await emailjs.sendForm('service_typd4jv','template_khilsn7',form);
+    document.body.removeChild(form);
+    depositStatus.textContent="Email envoyé ✅";
+    alert("Dépôt validé, email envoyé et solde mis à jour.");
+    depositPack.value=''; depositAmount.value=''; depositNetwork.value=''; depositPhone.value=''; ussdCode.value=''; transactionMessage.value=''; depositProof.value=''; previewImg.style.display='none'; lastProofBase64=''; checkDepositEnable();
+  }catch(err){ console.error(err); depositStatus.textContent="Erreur envoi email ❌"; alert("Dépôt enregistré mais envoi email échoué."); }
+});
+
+// --- Withdraw enable ---
+function checkWithdrawEnable(){
+  const amt=parseInt(withdrawAmount.value)||0;
+  const method=withdrawNetwork.value;
+  const phone=withdrawPhone.value.trim();
+  const msg=withdrawMessage.value.trim();
+  withdrawSubmit.disabled=!(amt>0 && method && phone.length>=6 && msg.length>0);
+}
+[withdrawAmount,withdrawNetwork,withdrawPhone,withdrawMessage].forEach(el=>el.addEventListener('input',checkWithdrawEnable));
+
+// --- Withdraw submit ---
+withdrawSubmit.addEventListener('click', async ()=>{
+  withdrawStatus.textContent="Envoi en cours...";
+  const amount=parseInt(withdrawAmount.value);
+  const method=withdrawNetwork.value;
+  const phone=withdrawPhone.value.trim();
+  const message=withdrawMessage.value.trim();
+  if(!amount||!method||!phone||!message){ alert("Champs obligatoires manquants"); withdrawStatus.textContent=''; return; }
+
+  try{
+    const userRef = doc(db,'users',currentUserEmail);
+    const snap = await getDoc(userRef);
+    let balance=0, history=[];
+    if(snap.exists()){ balance=snap.data().balance||0; history=snap.data().history||[]; }
+    if(balance<amount){ alert("Solde insuffisant"); withdrawStatus.textContent=''; return; }
+    balance-=amount;
+    history.unshift({type:'Retrait', amount, method, phone, message, date:new Date().toLocaleString()});
+    await setDoc(userRef,{balance,history},{merge:true});
+  }catch(err){ console.error(err); alert("Erreur Firestore"); withdrawStatus.textContent=''; return; }
+
+  try{
+    const form=document.createElement('form'); form.style.display='none';
+    form.innerHTML=`
+      <input type="hidden" name="name" value="Mikoseel">
+      <input type="hidden" name="user_name" value="${escapeHtml(currentUserEmail.split('@')[0])}">
+      <input type="hidden" name="user_email" value="${escapeHtml(currentUserEmail)}">
+      <input type="hidden" name="type" value="Retrait">
+      <input type="hidden" name="amount" value="${amount}">
+      <input type="hidden" name="method" value="${escapeHtml(method)}">
+      <input type="hidden" name="message" value="${escapeHtml(message)}">
+      <input type="hidden" name="proof" value="N/A">
+      <input type="hidden" name="title" value="Nouvelle opération Mikoseel">
+      <input type="hidden" name="email" value="${escapeHtml(currentUserEmail)}">
+    `;
+    document.body.appendChild(form);
+    await emailjs.sendForm('service_typd4jv','template_khilsn7',form);
+    document.body.removeChild(form);
+    withdrawStatus.textContent="Email envoyé ✅";
+    alert("Retrait validé, email envoyé et solde mis à jour.");
+    withdrawAmount.value=''; withdrawNetwork.value=''; withdrawPhone.value=''; withdrawMessage.value=''; checkWithdrawEnable();
+  }catch(err){ console.error(err); withdrawStatus.textContent="Erreur envoi email ❌"; alert("Retrait enregistré mais email échoué"); }
+});
+
+// --- Escape helper ---
+function escapeHtml(str){ if(!str)return ''; return String(str).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;'); }
+</script>
 </body>
 </html>
