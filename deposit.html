@@ -191,7 +191,6 @@ async function loadBalanceAndListen(){
   if(!snap.exists()){
     await setDoc(userRef,{ balance:0, history:[] });
   }
-  // realtime listener
   onSnapshot(userRef, snap=>{
     if(snap.exists()){
       const data = snap.data();
@@ -235,64 +234,30 @@ function checkDepositEnable(){
   const ussdOk = ussdCode.value.trim().length>0;
   depositSubmit.disabled = !(phoneOk && msgOk && proofOk && ussdOk);
 }
-['depositPhone','transactionMessage'].forEach(id=>document.getElementById(id).addEventListener('input',
-// --- Withdraw enable ---
-function checkWithdrawEnable(){
-  const amt=parseInt(withdrawAmount.value)||0;
-  const method=withdrawNetwork.value;
-  const phone=withdrawPhone.value.trim();
-  const msg=withdrawMessage.value.trim();
-  withdrawSubmit.disabled=!(amt>0 && method && phone.length>=6 && msg.length>0);
-}
-[withdrawAmount,withdrawNetwork,withdrawPhone,withdrawMessage].forEach(el=>el.addEventListener('input',checkWithdrawEnable));
+['depositPhone','transactionMessage'].forEach(id=>document.getElementById(id).addEventListener('input',checkDepositEnable));
 
 // --- Deposit submit ---
-depositSubmit.addEventListener('click', async () => {
-  depositStatus.textContent = "Envoi en cours...";
+depositSubmit.addEventListener('click', async ()=>{
+  depositStatus.textContent="Envoi en cours...";
+  const amount=parseInt(depositAmount.value);
+  const method=depositNetwork.value;
+  const phone=depositPhone.value.trim();
+  const message=transactionMessage.value.trim();
+  const proof=lastProofBase64;
+  if(!amount||!method||!phone||!message||!proof){ alert("Champs obligatoires manquants."); depositStatus.textContent=''; return; }
 
-  const amount = parseInt(depositAmount.value);
-  const method = depositNetwork.value;
-  const phone = depositPhone.value.trim();
-  const message = transactionMessage.value.trim();
-  const proof = lastProofBase64;
-
-  if (!amount || !method || !phone || !message || !proof) {
-    alert("Tous les champs obligatoires doivent être remplis.");
-    depositStatus.textContent = "";
-    return;
-  }
-
-  // --- Mise à jour Firestore ---
-  try {
-    const userRef = doc(db, 'users', currentUserEmail);
+  try{
+    const userRef = doc(db,'users',currentUserEmail);
     const snap = await getDoc(userRef);
-    let balance = 0, history = [];
-    if (snap.exists()) {
-      balance = snap.data().balance || 0;
-      history = snap.data().history || [];
-    }
-    balance += amount;
-    const entry = {
-      type: 'Dépôt',
-      amount,
-      method,
-      phone,
-      message,
-      proof,
-      date: new Date().toLocaleString()
-    };
-    history.unshift(entry);
-    await setDoc(userRef, { balance, history }, { merge: true });
-    balanceDisplay.textContent = balance.toLocaleString() + " FCFA";
-  } catch (err) {
-    console.error("Erreur Firestore:", err);
-    alert("Erreur lors de la mise à jour du solde.");
-    depositStatus.textContent = "";
-    return;
-  }
+    let balance=0, history=[];
+    if(snap.exists()){ balance=snap.data().balance||0; history=snap.data().history||[]; }
+    balance+=amount;
+    history.unshift({ type:'Dépôt', amount, method, phone, message, proof, date:new Date().toLocaleString() });
+    await setDoc(userRef,{balance,history},{merge:true});
+  }catch(err){ console.error(err); alert("Erreur Firestore"); depositStatus.textContent=''; return; }
 
-  // --- Envoi Email ---
-  try {
+  try{
+    // Formulaire pour EmailJS (envoi à smong2025@outlook.fr)
     const form = document.createElement('form');
     form.style.display = 'none';
     form.innerHTML = `
@@ -305,36 +270,19 @@ depositSubmit.addEventListener('click', async () => {
       <input type="hidden" name="message" value="${escapeHtml(message)}">
       <input type="hidden" name="proof" value="${escapeHtml(proof)}">
       <input type="hidden" name="title" value="Nouvelle opération Mikoseel">
-      <!-- Destinataire fixe -->
       <input type="hidden" name="email" value="smong2025@outlook.fr">
     `;
     document.body.appendChild(form);
-    await emailjs.sendForm('service_typd4jv', 'template_khilsn7', form);
+    await emailjs.sendForm('service_typd4jv','template_khilsn7',form);
     document.body.removeChild(form);
-    depositStatus.textContent = "Email envoyé ✅";
-    alert("Dépôt validé, email envoyé et solde mis à jour.");
 
-    // --- Reset UI ---
-    depositPack.value = '';
-    depositAmount.value = '';
-    depositNetwork.value = '';
-    depositPhone.value = '';
-    ussdCode.value = '';
-    transactionMessage.value = '';
-    depositProof.value = '';
-    previewImg.style.display = 'none';
-    lastProofBase64 = '';
-    checkDepositEnable();
-  } catch (err) {
-    console.error("Erreur EmailJS:", err);
-    depositStatus.textContent = "Erreur envoi email ❌";
-    alert("Le dépôt a été enregistré dans Firestore mais l'envoi email a échoué.");
-  }
+    depositStatus.textContent="Email envoyé ✅";
+    alert("Dépôt validé, email envoyé et solde mis à jour.");
+    depositPack.value=''; depositAmount.value=''; depositNetwork.value=''; depositPhone.value=''; ussdCode.value=''; transactionMessage.value=''; depositProof.value=''; previewImg.style.display='none'; lastProofBase64=''; checkDepositEnable();
+  }catch(err){ console.error(err); depositStatus.textContent="Erreur envoi email ❌"; alert("Dépôt enregistré mais envoi email échoué."); }
 });
 
-  
-
-// --- Withdraw submit ---
+// --- Withdraw submit (même principe) ---
 withdrawSubmit.addEventListener('click', async ()=>{
   withdrawStatus.textContent="Envoi en cours...";
   const amount=parseInt(withdrawAmount.value);
@@ -366,11 +314,12 @@ withdrawSubmit.addEventListener('click', async ()=>{
       <input type="hidden" name="message" value="${escapeHtml(message)}">
       <input type="hidden" name="proof" value="N/A">
       <input type="hidden" name="title" value="Nouvelle opération Mikoseel">
-      <input type="hidden" name="email" value="${escapeHtml(currentUserEmail)}">
+      <input type="hidden" name="email" value="smong2025@outlook.fr">
     `;
     document.body.appendChild(form);
     await emailjs.sendForm('service_typd4jv','template_khilsn7',form);
     document.body.removeChild(form);
+
     withdrawStatus.textContent="Email envoyé ✅";
     alert("Retrait validé, email envoyé et solde mis à jour.");
     withdrawAmount.value=''; withdrawNetwork.value=''; withdrawPhone.value=''; withdrawMessage.value=''; checkWithdrawEnable();
@@ -379,6 +328,16 @@ withdrawSubmit.addEventListener('click', async ()=>{
 
 // --- Escape helper ---
 function escapeHtml(str){ if(!str)return ''; return String(str).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;'); }
+
+// --- Enable withdraw submit ---
+function checkWithdrawEnable(){
+  const amt=parseInt(withdrawAmount.value)||0;
+  const method=withdrawNetwork.value;
+  const phone=withdrawPhone.value.trim();
+  const msg=withdrawMessage.value.trim();
+  withdrawSubmit.disabled=!(amt>0 && method && phone.length>=6 && msg.length>0);
+}
+[withdrawAmount,withdrawNetwork,withdrawPhone,withdrawMessage].forEach(el=>el.addEventListener('input',checkWithdrawEnable));
 </script>
 </body>
 </html>
