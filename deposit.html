@@ -30,13 +30,14 @@ button.primary{background:linear-gradient(90deg,var(--violet-mid),var(--rose));c
 .pack h4{margin:0 0 6px 0}
 .small-muted{color:#d6c6ff;font-size:13px;margin-top:6px}
 #previewImg{max-width:100%;max-height:160px;border-radius:10px;opacity:0.6;margin-top:6px}
+#packBronze{background:#cd7f32;} #packSilver{background:#c0c0c0;color:#000;}
+#packGold{background:#ffd700;color:#000;} #packDiamond{background:#b9f2ff;color:#000;}
 </style>
 </head>
 <body>
 
 <header>
   <h1>Mikoseel — Dépôt & Retrait</h1>
-  <button class="back-btn" onclick="window.location.href='dashboard.html'">Retour</button>
 </header>
 
 <div class="tabs">
@@ -45,7 +46,8 @@ button.primary{background:linear-gradient(90deg,var(--violet-mid),var(--rose));c
 </div>
 
 <div class="container">
-  <!-- DÉPÔT -->
+
+  <!-- SECTION DÉPÔT -->
   <div class="section active" id="depositSection">
     <div class="card">
       <h2>Dépôt</h2>
@@ -58,14 +60,12 @@ button.primary{background:linear-gradient(90deg,var(--violet-mid),var(--rose));c
         <label>Réseau</label>
         <select id="depositNetwork">
           <option value="">-- Choisir --</option>
-          <option value="mtn">MTN</option>
-          <option value="celtiis">Celtiis</option>
-          <option value="moov">Moov</option>
+          <option value="MTN">MTN</option>
+          <option value="Celtiis">Celtiis</option>
+          <option value="Moov">Moov</option>
         </select>
         <label>Numéro</label>
         <input type="text" id="depositPhone" placeholder="Ex: 60000000">
-        <label>USSD généré</label>
-        <input type="text" id="ussdCode" readonly>
         <label>Message de transaction</label>
         <textarea id="transactionMessage" rows="2"></textarea>
         <label>Capture paiement</label>
@@ -76,7 +76,7 @@ button.primary{background:linear-gradient(90deg,var(--violet-mid),var(--rose));c
     </div>
   </div>
 
-  <!-- RETRAIT -->
+  <!-- SECTION RETRAIT -->
   <div class="section" id="withdrawSection">
     <div class="card">
       <h2>Retrait</h2>
@@ -86,186 +86,122 @@ button.primary{background:linear-gradient(90deg,var(--violet-mid),var(--rose));c
         <label>Méthode</label>
         <select id="withdrawNetwork">
           <option value="">-- Choisir --</option>
-          <option value="mtn">MTN</option>
-          <option value="celtiis">Celtiis</option>
-          <option value="moov">Moov</option>
-          <option value="virement">Virement Bancaire</option>
+          <option value="MTN">MTN</option>
+          <option value="Celtiis">Celtiis</option>
+          <option value="Moov">Moov</option>
+          <option value="Virement">Virement Bancaire</option>
         </select>
         <label>Numéro</label>
         <input type="text" id="withdrawPhone" placeholder="Ex: 60000000">
-        <label>Message de transaction / info</label>
+        <label>Message</label>
         <textarea id="withdrawMessage" rows="2"></textarea>
         <button type="submit" class="primary">Valider Retrait</button>
       </form>
     </div>
   </div>
 
-  <!-- SOLDE -->
-  <div class="card small-card">
-    <h3>Solde du compte</h3>
-    <p id="balanceDisplay">0 FCFA</p>
-  </div>
 </div>
 
-<!-- EMAILJS (hors module pour compatibilité navigateur) -->
-<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<!-- EmailJS -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
-(function(){
-  emailjs.init("6BLdU6p0YUHLeqINk"); // clé publique
-})();
-</script>
+emailjs.init("6BLdU6p0YUHLeqINk");
 
-<!-- FIREBASE + LOGIQUE -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBKyAIcBC8tpWWaYgE_NeZEWJn8AEoyDLQ",
-  authDomain: "valide-28624.firebaseapp.com",
-  databaseURL: "https://valide-28624-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "valide-28624",
-  storageBucket: "valide-28624.firebasestorage.app",
-  messagingSenderId: "483447990733",
-  appId: "1:483447990733:web:25c76bde60f9d78e76bc84"
-};
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
-
-let currentUserEmail = null;
-
-// Vérif connexion
-onAuthStateChanged(auth, user=>{
-  if(user){
-    currentUserEmail = user.email;
-    updateBalance();
-  } else {
-    // Pour test sans connexion
-    currentUserEmail = "test@mikoseel.com";
-    updateBalance();
-  }
-});
-
-// Packs
-const packs=[
-  { name:'Pack Bronze',min:2000,max:5000,gain:250 },
-  { name:'Pack Silver',min:5000,max:10000,gain:900 },
-  { name:'Pack Gold',min:10000,max:50000,gain:2000 },
-  { name:'Pack Diamond',min:50000,max:1500000,gain:12000 }
+const packs = [
+  { name: 'Pack Bronze', min: 2000, max: 5000, gain: 250, colorId:'packBronze' },
+  { name: 'Pack Silver', min: 5000, max: 10000, gain: 900, colorId:'packSilver' },
+  { name: 'Pack Gold', min: 10000, max: 50000, gain: 2000, colorId:'packGold' },
+  { name: 'Pack Diamond', min: 50000, max: 1500000, gain: 12000, colorId:'packDiamond' }
 ];
 
-const packsContainer=document.getElementById('packsContainer');
+const packsContainer = document.getElementById('packsContainer');
 packs.forEach(p=>{
   const div=document.createElement('div');
   div.className='pack';
+  div.id=p.colorId;
   div.innerHTML=`<h4>${p.name}</h4>
     <div>Invest: ${p.min.toLocaleString()} - ${p.max.toLocaleString()} FCFA</div>
-    <div class='small-muted'>Gains/12h: ${p.gain.toLocaleString()} FCFA</div>`;
-  div.onclick=()=>{
-    document.getElementById('depositPack').value=p.name;
-    document.getElementById('depositAmount').value=p.min;
-    updateUSSD();
-  };
+    <div class="small-muted">Gain/12h: ${p.gain.toLocaleString()} FCFA</div>`;
+  div.onclick=()=>document.getElementById('depositPack').value=p.name;
   packsContainer.appendChild(div);
 });
 
 // Onglets
-document.querySelectorAll(".tab-btn").forEach(tab=>{
-  tab.addEventListener("click",()=>{
-    document.querySelectorAll(".tab-btn").forEach(t=>t.classList.remove("active"));
-    tab.classList.add("active");
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
     document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-    document.getElementById(tab.dataset.target).classList.add("active");
-  });
+    btn.classList.add("active");
+    document.getElementById(btn.dataset.target).classList.add("active");
+  };
 });
 
-// USSD auto
-function updateUSSD(){
-  const net=document.getElementById('depositNetwork').value;
-  const amt=parseInt(document.getElementById('depositAmount').value)||0;
-  const phone=document.getElementById('depositPhone').value.trim();
-  const out=document.getElementById('ussdCode');
-  if(!net||amt<=0||!phone){out.value='';return;}
-  switch(net){
-    case'mtn':out.value=`*880*41*177125*${amt}#`;break;
-    case'celtiis':out.value=`*889*6*1*ESS02*${amt}#`;break;
-    case'moov':out.value=`*851*4*1*264081*${amt}#`;break;
-  }
-}
-['depositNetwork','depositAmount','depositPhone'].forEach(id=>{
-  document.getElementById(id).addEventListener('input',updateUSSD);
-});
-
-// Préview image
-let proofBase64="";
-document.getElementById('depositProof').addEventListener('change',e=>{
+// Prévisualisation image
+document.getElementById('depositProof').addEventListener('change', e=>{
   const file=e.target.files[0];
+  const img=document.getElementById('previewImg');
   if(file){
     const reader=new FileReader();
-    reader.onload=ev=>{
-      proofBase64=ev.target.result;
-      document.getElementById('previewImg').src=proofBase64;
-      document.getElementById('previewImg').style.display='block';
-    };
+    reader.onload=ev=>{ img.src=ev.target.result; img.style.display='block'; };
     reader.readAsDataURL(file);
-  }
+  }else img.style.display='none';
 });
 
-// Envoi EmailJS
-async function sendMikoseelEmail({type,amount,method,phone,message,proofBase64}){
-  const params={
-    name: currentUserEmail.split("@")[0],
-    user_name: currentUserEmail.split("@")[0],
-    user_email: currentUserEmail,
-    type, amount, method,
-    message: message||"Aucun message",
-    proof: proofBase64||"N/A",
-    title: "Nouvelle opération Mikoseel",
-    email: currentUserEmail
-  };
-  console.log("📨 Envoi EmailJS avec paramètres :", params);
-  return emailjs.send("service_typd4jv","template_khilsn7",params)
-    .then(()=>console.log("✅ Email envoyé"))
-    .catch(err=>console.error("❌ Erreur EmailJS:",err));
-}
-
-// Solde
-async function updateBalance(){
-  const docRef=doc(db,"users",currentUserEmail);
-  const snap=await getDoc(docRef);
-  if(snap.exists()){
-    document.getElementById('balanceDisplay').textContent=(snap.data().balance||0).toLocaleString()+" FCFA";
-  } else {
-    await setDoc(docRef,{balance:0});
-    document.getElementById('balanceDisplay').textContent="0 FCFA";
-  }
+// Fonction d'envoi EmailJS (comme ton test)
+async function sendEmail(data){
+  const form=document.createElement('form');
+  form.innerHTML=`
+    <input type="hidden" name="name" value="Mikoseel">
+    <input type="hidden" name="user_name" value="${data.user_name}">
+    <input type="hidden" name="user_email" value="${data.user_email}">
+    <input type="hidden" name="type" value="${data.type}">
+    <input type="hidden" name="amount" value="${data.amount}">
+    <input type="hidden" name="method" value="${data.method}">
+    <input type="hidden" name="message" value="${data.message}">
+    <input type="hidden" name="proof" value="${data.proof||''}">
+  `;
+  await emailjs.sendForm("default_service","template_khilsn7",form)
+    .then(()=>alert("✅ Email envoyé !"))
+    .catch(err=>alert("❌ Erreur EmailJS : "+JSON.stringify(err)));
 }
 
 // Dépôt
-document.getElementById('depositForm').addEventListener('submit',async e=>{
+document.getElementById("depositForm").addEventListener("submit",e=>{
   e.preventDefault();
-  const amount=parseInt(document.getElementById('depositAmount').value);
-  const method=document.getElementById('depositNetwork').value;
-  const phone=document.getElementById('depositPhone').value.trim();
-  const message=document.getElementById('transactionMessage').value;
-  if(!amount||!method||!phone){alert("Champs requis manquants.");return;}
-  await sendMikoseelEmail({type:"Dépôt",amount,method,phone,message,proofBase64});
-  alert("Dépôt enregistré et mail envoyé !");
+  const pack=document.getElementById("depositPack").value;
+  const amount=document.getElementById("depositAmount").value;
+  const method=document.getElementById("depositNetwork").value;
+  const message=document.getElementById("transactionMessage").value;
+  const proof=document.getElementById("previewImg").src;
+  if(!amount||!method){ alert("Veuillez remplir tous les champs."); return; }
+
+  sendEmail({
+    user_name: "Client Mikoseel",
+    user_email: "client@example.com",
+    type: "Dépôt",
+    amount, method, message, proof
+  });
+  e.target.reset();
+  document.getElementById("previewImg").style.display="none";
 });
 
 // Retrait
-document.getElementById('withdrawForm').addEventListener('submit',async e=>{
+document.getElementById("withdrawForm").addEventListener("submit",e=>{
   e.preventDefault();
-  const amount=parseInt(document.getElementById('withdrawAmount').value);
-  const method=document.getElementById('withdrawNetwork').value;
-  const phone=document.getElementById('withdrawPhone').value.trim();
-  const message=document.getElementById('withdrawMessage').value;
-  if(!amount||!method||!phone){alert("Champs requis manquants.");return;}
-  await sendMikoseelEmail({type:"Retrait",amount,method,phone,message,proofBase64:"N/A"});
-  alert("Retrait enregistré et mail envoyé !");
+  const amount=document.getElementById("withdrawAmount").value;
+  const method=document.getElementById("withdrawNetwork").value;
+  const message=document.getElementById("withdrawMessage").value;
+  if(!amount||!method){ alert("Veuillez remplir tous les champs."); return; }
+
+  sendEmail({
+    user_name: "Client Mikoseel",
+    user_email: "client@example.com",
+    type: "Retrait",
+    amount, method, message, proof:""
+  });
+  e.target.reset();
 });
 </script>
+
 </body>
 </html>
