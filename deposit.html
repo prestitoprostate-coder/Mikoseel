@@ -1,146 +1,228 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Mikoseel — Dépôt & Retrait (PRODUCTION-safe)</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mikoseel — Dépôt & Retrait</title>
 <style>
-:root{ --violet-dark:#0c001a; --violet:#4c1d95; --violet-mid:#6d28d9; --rose:#ec4899; --text-light:#e9d5ff; }
-body{margin:0;font-family:Poppins,system-ui,Arial;background:linear-gradient(120deg,var(--violet-dark),var(--violet),var(--violet-mid));color:var(--text-light);min-height:100vh;padding:18px;}
-.container{max-width:920px;margin:0 auto;}
-.card{background:rgba(10,0,30,0.55);padding:18px;border-radius:12px;margin-bottom:18px;box-shadow:0 8px 30px rgba(0,0,0,0.25);}
-input,select,textarea,button{width:100%;padding:10px;border-radius:8px;border:none;background:rgba(255,255,255,0.04);color:var(--text-light);margin-top:8px;}
-button.primary{background:linear-gradient(90deg,var(--violet-mid),var(--rose));color:#fff;font-weight:700;cursor:pointer;}
-.small-muted{font-size:13px;color:#d6c6ff;margin-top:6px;}
-.pack-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:12px 0;}
-.pack{padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.08));cursor:pointer;text-align:center;}
-#previewImg{max-width:100%;max-height:180px;border-radius:8px;margin-top:8px;display:none;}
-.row{display:flex;gap:12px;}
-.col{flex:1;}
+  body{
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg,#0c001a,#4c1d95);
+    color: #fff;
+    padding: 20px;
+  }
+  h1{text-align:center;margin-bottom:30px;}
+
+  /* --- Onglets --- */
+  .tabs{
+    display:flex;
+    justify-content:center;
+    margin-bottom:25px;
+    gap:10px;
+  }
+  .tab{
+    padding:10px 20px;
+    border-radius:8px;
+    background:rgba(255,255,255,0.1);
+    cursor:pointer;
+    font-weight:600;
+    transition:0.3s;
+  }
+  .tab.active{
+    background:linear-gradient(90deg,#6d28d9,#ec4899);
+  }
+
+  form{
+    max-width:720px;
+    margin:0 auto;
+    background:rgba(255,255,255,0.05);
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 4px 20px rgba(0,0,0,0.3);
+  }
+  .field{margin-bottom:12px;}
+  label{display:block;margin-bottom:6px;font-weight:600;}
+  input,select,textarea{
+    width:100%;padding:10px;border:none;border-radius:6px;
+    background:rgba(255,255,255,0.08);color:#fff;
+  }
+  input::placeholder,textarea::placeholder{color:#ddd;}
+  button,input[type="submit"]{
+    width:100%;padding:12px;border:none;border-radius:6px;
+    background:linear-gradient(90deg,#6d28d9,#ec4899);
+    color:#fff;font-weight:bold;cursor:pointer;
+  }
+  #preview{display:none;max-width:100%;margin-top:8px;border-radius:6px;border:2px solid rgba(255,255,255,0.06);}
+  .ussd-box{
+    margin-top:12px;
+    padding:15px;
+    background:rgba(236,72,153,0.15);
+    color:#fff;
+    font-size:20px;
+    font-weight:bold;
+    border-radius:8px;
+    text-align:center;
+    cursor:pointer;
+    transition:0.2s all;
+  }
+  .ussd-box:hover{
+    background:rgba(236,72,153,0.3);
+  }
+  .valider-solde{
+    max-width:720px;margin:25px auto;padding:20px;
+    background:rgba(236,72,153,0.12);
+    border:2px solid #ec4899;border-radius:10px;text-align:center;
+  }
+  .muted{color:#d6c6ff;font-size:13px;margin-top:8px;}
+  .small{font-size:13px;color:#e0d7ff;margin-top:6px;}
 </style>
-<!-- EmailJS SDK -->
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<!-- Firebase SDKs -->
-<script type="module">
-  // NOTE: we will import Firebase SDK in the module below
-</script>
 </head>
 <body>
-<div class="container">
-  <div class="card">
-    <h1>Mikoseel — Dépôt & Retrait</h1>
-    <div id="userEmailDisplay" class="small-muted"></div>
-  </div>
 
-  <div class="card">
-    <h2>Dépôt</h2>
-    <label>Pack</label>
-    <input id="depositPack" readonly placeholder="Choisir un pack ci-dessous">
-    <div class="pack-list" id="packsContainer"></div>
-    <div class="row">
-      <div class="col"><label>Montant (FCFA)</label><input type="number" id="depositAmount" min="1" /></div>
-      <div class="col"><label>Réseau</label><select id="depositNetwork"><option value="">--Choisir--</option><option value="mtn">MTN</option><option value="celtiis">Celtiis</option><option value="moov">Moov</option></select></div>
-    </div>
-    <label>Numéro (obligatoire)</label><input id="depositPhone" placeholder="Ex: 60000000" />
-    <label>USSD généré (ne pas exécuter automatiquement)</label><input id="ussdCode" readonly />
-    <label>Message transaction</label><textarea id="transactionMessage" rows="3"></textarea>
-    <label>Preuve (photo)</label><input type="file" id="depositProof" accept="image/*" /><img id="previewImg" alt="aperçu" />
-    <button id="depositSubmit" class="primary" disabled>Soumettre dépôt (en attente validation)</button>
-    <p id="depositStatus" class="small-muted"></p>
-  </div>
+<h1>📩 Mikoseel — Dépôt & Retrait</h1>
 
-  <div class="card">
-    <h2>Retrait</h2>
-    <label>Montant (FCFA)</label><input id="withdrawAmount" type="number" min="1" />
-    <label>Méthode</label><select id="withdrawNetwork"><option value="">--Choisir--</option><option value="mtn">MTN</option><option value="celtiis">Celtiis</option><option value="moov">Moov</option><option value="virement">Virement</option></select>
-    <label>Numéro</label><input id="withdrawPhone" placeholder="Ex: 60000000" />
-    <label>Message</label><textarea id="withdrawMessage" rows="2"></textarea>
-    <button id="withdrawSubmit" class="primary" disabled>Soumettre retrait (en attente validation)</button>
-    <p id="withdrawStatus" class="small-muted"></p>
-  </div>
-
-  <div class="card">
-    <h3>Solde</h3>
-    <p id="balanceDisplay">0 FCFA</p>
-  </div>
+<!-- Onglets -->
+<div class="tabs">
+  <div class="tab active" data-target="depot">Dépôt</div>
+  <div class="tab" data-target="retrait">Retrait</div>
 </div>
 
-<script type="module">
-/* ---------- CONFIGURE ICI (remplace les placeholders) ---------- */
-const firebaseConfig = {
-  apiKey: "REPLACE_FIREBASE_APIKEY",
-  authDomain: "REPLACE_FIREBASE_AUTHDOMAIN",
-  projectId: "REPLACE_FIREBASE_PROJECTID",
-  storageBucket: "REPLACE_FIREBASE_STORAGEBUCKET",
-  messagingSenderId: "REPLACE_FIREBASE_MESSAGINGSENDERID",
-  appId: "REPLACE_FIREBASE_APPID"
-};
-const EMAILJS_PUBLIC_KEY = "REPLACE_EMAILJS_PUBLIC_KEY";
-const EMAILJS_SERVICE_ID = "REPLACE_EMAILJS_SERVICE_ID";
-const EMAILJS_TEMPLATE_ID = "REPLACE_EMAILJS_TEMPLATE_ID";
-const ADMIN_EMAIL = "remplace@tonmail.com"; // adresse qui recevra la notification
-/* ------------------------------------------------------------- */
+<!-- FORMULAIRE DÉPÔT -->
+<form id="form-depot" class="form-tab">
+  <div class="field">
+    <label for="name">Nom complet</label>
+    <input type="text" name="name" id="name" placeholder="Ton nom complet" required>
+  </div>
 
-/* Imports Firebase */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+  <div class="field">
+    <label for="user_name">Identifiant utilisateur</label>
+    <input type="text" name="user_name" id="user_name" placeholder="Pseudo ou ID" required>
+  </div>
 
-emailjs.init(EMAILJS_PUBLIC_KEY);
+  <div class="field">
+    <label for="user_email">Adresse e-mail</label>
+    <input type="email" name="user_email" id="user_email" placeholder="ton.email@exemple.com" required>
+  </div>
 
-/* UI refs */
-const depositPack = document.getElementById('depositPack');
-const packsContainer = document.getElementById('packsContainer');
-const depositAmount = document.getElementById('depositAmount');
-const depositNetwork = document.getElementById('depositNetwork');
-const depositPhone = document.getElementById('depositPhone');
-const ussdCode = document.getElementById('ussdCode');
-const transactionMessage = document.getElementById('transactionMessage');
-const depositProof = document.getElementById('depositProof');
-const previewImg = document.getElementById('previewImg');
-const depositSubmit = document.getElementById('depositSubmit');
-const depositStatus = document.getElementById('depositStatus');
-const withdrawAmount = document.getElementById('withdrawAmount');
-const withdrawNetwork = document.getElementById('withdrawNetwork');
-const withdrawPhone = document.getElementById('withdrawPhone');
-const withdrawMessage = document.getElementById('withdrawMessage');
-const withdrawSubmit = document.getElementById('withdrawSubmit');
-const withdrawStatus = document.getElementById('withdrawStatus');
-const balanceDisplay = document.getElementById('balanceDisplay');
-const userEmailDisplay = document.getElementById('userEmailDisplay');
+  <div class="field">
+    <label for="pack">Pack choisi</label>
+    <select name="pack" id="pack" required>
+      <option value="">-- Sélectionner un pack --</option>
+      <option value="Bronze">Pack Bronze (2 000 – 5 000 FCFA)</option>
+      <option value="Silver">Pack Silver (5 000 – 10 000 FCFA)</option>
+      <option value="Gold">Pack Gold (10 000 – 50 000 FCFA)</option>
+      <option value="Diamond">Pack Diamond (50 000 – 1 500 000 FCFA)</option>
+    </select>
+  </div>
 
-let currentUserEmail = null;
-let lastProofBase64 = '';
+  <div class="field">
+    <label for="amount">Montant (FCFA)</label>
+    <input type="number" name="amount" id="amount" placeholder="Ex: 5000" required>
+  </div>
 
-/* packs */
-const packs = [
-  { name: 'Pack Bronze', min: 2000, max: 5000, gain: 250 },
-  { name: 'Pack Silver', min: 5000, max: 10000, gain: 900 },
-  { name: 'Pack Gold', min: 10000, max: 50000, gain: 2000 },
-  { name: 'Pack Diamond', min: 50000, max: 1500000, gain: 12000 }
-];
-packs.forEach(p=>{
-  const d=document.createElement('div'); d.className='pack';
-  d.innerHTML=`<h4>${p.name}</h4><div class="small-muted">Invest: ${p.min.toLocaleString()} - ${p.max.toLocaleString()} FCFA</div><div class="small-muted">Gains/12h: ${p.gain.toLocaleString()} FCFA</div>`;
-  d.onclick=()=>{ depositPack.value=p.name; depositAmount.value=p.min; updateUSSD(); checkDepositEnable(); };
-  packsContainer.appendChild(d);
+  <div class="field">
+    <label for="method">Réseau</label>
+    <select name="method" id="method" required>
+      <option value="">-- Choisir un réseau --</option>
+      <option value="mtn">MTN</option>
+      <option value="moov">Moov</option>
+      <option value="celtiis">Celtiis</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="phone">Numéro</label>
+    <input type="tel" name="phone" id="phone" placeholder="Ex: 60000000" required>
+  </div>
+
+  <div id="ussdBox" class="ussd-box" title="Clique pour copier le code">Le code USSD apparaîtra ici</div>
+
+  <div class="field">
+    <label for="message">Message ou référence</label>
+    <textarea name="message" id="message" rows="2" placeholder="Référence de la transaction" required></textarea>
+  </div>
+
+  <div class="field">
+    <label for="proof">Capture de paiement</label>
+    <input type="file" id="proofFile" accept="image/*" required>
+    <input type="hidden" name="proof" id="proof">
+    <img id="preview" alt="Aperçu preuve">
+  </div>
+
+  <input type="submit" id="button" value="Envoyer le mail">
+  <p id="status" class="muted"></p>
+</form>
+
+<!-- FORMULAIRE RETRAIT -->
+<form id="form-retrait" class="form-tab" style="display:none;">
+  <div class="field">
+    <label for="name2">Nom complet</label>
+    <input type="text" name="name2" id="name2" placeholder="Ton nom complet" required>
+  </div>
+
+  <div class="field">
+    <label for="user_name2">Identifiant utilisateur</label>
+    <input type="text" name="user_name2" id="user_name2" placeholder="Pseudo ou ID" required>
+  </div>
+
+  <div class="field">
+    <label for="phone2">Numéro de retrait</label>
+    <input type="tel" name="phone2" id="phone2" placeholder="Ex: 60000000" required>
+  </div>
+
+  <div class="field">
+    <label for="amount2">Montant à retirer (FCFA)</label>
+    <input type="number" name="amount2" id="amount2" placeholder="Ex: 5000" required>
+  </div>
+
+  <div class="field">
+    <label for="method2">Réseau</label>
+    <select name="method2" id="method2" required>
+      <option value="">-- Choisir un réseau --</option>
+      <option value="mtn">MTN</option>
+      <option value="moov">Moov</option>
+      <option value="celtiis">Celtiis</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="message2">Message ou remarque</label>
+    <textarea name="message2" id="message2" rows="2" placeholder="Remarques ou référence"></textarea>
+  </div>
+
+  <input type="submit" id="button2" value="Envoyer la demande de retrait">
+  <p id="status2" class="muted"></p>
+</form>
+
+<div class="valider-solde">
+  <h2>💰 Valider le solde</h2>
+  <p>Après envoi du mail, clique ici pour aller sur la page de validation.</p>
+  <a href="solde.html" style="color:#fff;font-weight:700;background:linear-gradient(90deg,#6d28d9,#ec4899);padding:10px 18px;border-radius:8px;text-decoration:none;display:inline-block;margin-top:10px;">👉 Aller sur la page de validation</a>
+</div>
+
+<!-- EmailJS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+emailjs.init('6BLdU6p0YUHLeqINk'); 
+const SERVICE_ID = 'default_service';
+const TEMPLATE_ID = 'template_khilsn7';
+
+/* --- Gestion des onglets --- */
+const tabs = document.querySelectorAll('.tab');
+const forms = document.querySelectorAll('.form-tab');
+tabs.forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    tabs.forEach(t=>t.classList.remove('active'));
+    forms.forEach(f=>f.style.display='none');
+    tab.classList.add('active');
+    document.getElementById('form-'+tab.dataset.target).style.display='block';
+  });
 });
 
-/* init Firebase */
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-/* helpers */
-function encodeEmailForId(email){
-  return String(email).replaceAll('.','_dot_').replaceAll('@','_at_');
-}
-function escapeHtml(str){ if(!str) return ''; return String(str).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;'); }
-function showError(el, msg){ if(el) el.textContent = msg || ''; console.error(msg); }
-
-/* USSD */
+/* --- Code USSD --- */
 function makeUSSD(network, amount){
-  if(!network||!amount) return '';
+  if(!network || !amount) return '';
+  amount = parseInt(amount) || 0;
   switch(network){
     case 'mtn': return `*880*41*177125*${amount}#`;
     case 'celtiis': return `*889*6*1*ESS02*${amount}#`;
@@ -148,195 +230,62 @@ function makeUSSD(network, amount){
     default: return '';
   }
 }
+const phoneEl = document.getElementById('phone');
+const amountEl = document.getElementById('amount');
+const methodEl = document.getElementById('method');
+const ussdBox = document.getElementById('ussdBox');
 function updateUSSD(){
-  const code = makeUSSD(depositNetwork.value, parseInt(depositAmount.value)||0);
-  ussdCode.value = code || '';
+  const code = makeUSSD(methodEl.value, amountEl.value);
+  ussdBox.textContent = code || 'Le code USSD apparaîtra ici';
 }
-['depositNetwork','depositAmount'].forEach(id=>document.getElementById(id).addEventListener('input',updateUSSD));
+[phoneEl, amountEl, methodEl].forEach(el=>el.addEventListener('input', updateUSSD));
 
-/* preview image */
-depositProof.addEventListener('change', e=>{
-  const file = e.target.files[0];
-  if(!file){ previewImg.style.display='none'; lastProofBase64=''; checkDepositEnable(); return; }
+/* --- Copie du code USSD --- */
+ussdBox.addEventListener('click', ()=>{
+  const txt = ussdBox.textContent.trim();
+  if(txt && txt.includes('*')) navigator.clipboard.writeText(txt).then(()=>alert('Code USSD copié ✅ : ' + txt));
+});
+
+/* --- Gestion de l’envoi EmailJS (formulaire dépôt) --- */
+const formDepot = document.getElementById('form-depot');
+const btn = document.getElementById('button');
+const proofFile = document.getElementById('proofFile');
+const preview = document.getElementById('preview');
+const proofHidden = document.getElementById('proof');
+const statusEl = document.getElementById('status');
+
+proofFile.addEventListener('change', ()=>{
+  const file = proofFile.files[0];
+  if(!file){ preview.style.display='none'; proofHidden.value=''; return; }
   const reader = new FileReader();
-  reader.onload = ev=>{ previewImg.src=ev.target.result; previewImg.style.display='block'; lastProofBase64=ev.target.result; checkDepositEnable(); };
+  reader.onload = e=>{
+    proofHidden.value = e.target.result;
+    preview.src = e.target.result;
+    preview.style.display='block';
+  };
   reader.readAsDataURL(file);
 });
 
-/* enable buttons */
-function checkDepositEnable(){
-  const phoneOk = depositPhone.value.trim().length>=6;
-  const msgOk = transactionMessage.value.trim().length>0;
-  const proofOk = lastProofBase64!=='';
-  const ussdOk = ussdCode.value.trim().length>0;
-  depositSubmit.disabled = !(phoneOk && msgOk && proofOk && ussdOk);
-}
-['depositPhone','transactionMessage'].forEach(id=>document.getElementById(id).addEventListener('input',checkDepositEnable));
-
-function checkWithdrawEnable(){
-  const amt=parseInt(withdrawAmount.value)||0;
-  const method=withdrawNetwork.value;
-  const phone=withdrawPhone.value.trim();
-  const msg=withdrawMessage.value.trim();
-  withdrawSubmit.disabled=!(amt>0 && method && phone.length>=6 && msg.length>0);
-}
-[withdrawAmount,withdrawNetwork,withdrawPhone,withdrawMessage].forEach(el=>el.addEventListener('input',checkWithdrawEnable));
-
-/* Auth state */
-onAuthStateChanged(auth, async user => {
-  if(user && user.email){
-    currentUserEmail = user.email;
-    userEmailDisplay.textContent = currentUserEmail;
-    await loadBalance();
-  } else {
-    // Si pas connecté, on peut demander login (email/password) — pour test on redirige vers login
-    // Pour l'instant, tenter une connexion test automatique si tu veux (à configurer côté dev)
-    userEmailDisplay.textContent = "Non connecté — connecte-toi avec email/password";
-    // EXEMPLE de connexion automatique (décommente et renseigne si souhaité)
-    // await signInWithEmailAndPassword(auth, "test.user@example.com", "MotDePasseTest123");
-  }
+formDepot.addEventListener('submit', e=>{
+  e.preventDefault();
+  btn.value='Envoi...';
+  if(!proofHidden.value){ alert('Veuillez joindre la capture de paiement.'); btn.value='Envoyer le mail'; return; }
+  emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, formDepot)
+  .then(()=>{ btn.value='Envoyer le mail'; statusEl.textContent='✅ Mail envoyé avec succès.'; alert('Mail envoyé ✅'); formDepot.reset(); preview.style.display='none'; ussdBox.textContent='Le code USSD apparaîtra ici'; })
+  .catch(err=>{ btn.value='Envoyer le mail'; statusEl.textContent='❌ Erreur : '+(err.text||JSON.stringify(err)); alert('Erreur mail : '+(err.text||JSON.stringify(err))); });
 });
 
-/* Load balance */
-async function loadBalance(){
-  try{
-    const id = encodeEmailForId(currentUserEmail);
-    const userRef = doc(db,'users',id);
-    const snap = await getDoc(userRef);
-    if(!snap.exists()){
-      await setDoc(userRef, { balance: 0, history: [], createdAt: serverTimestamp() });
-      balanceDisplay.textContent = "0 FCFA";
-      return;
-    }
-    const data = snap.data();
-    balanceDisplay.textContent = ((data.balance||0).toLocaleString()) + " FCFA";
-  }catch(err){ showError(depositStatus, "Erreur lecture solde: " + (err.message||err)); }
-}
-
-/* send email via EmailJS (notification to admin) */
-async function sendNotificationEmail(payload){
-  // payload: { to_email, subject, messageHtml, plain }
-  try{
-    const templateParams = {
-      to_email: payload.to_email || ADMIN_EMAIL,
-      subject: payload.subject,
-      message: payload.plain || JSON.stringify(payload),
-      user_email: currentUserEmail || "unknown",
-      raw_data: JSON.stringify(payload)
-    };
-    const res = await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
-    console.log("EmailJS res:", res);
-    return res;
-  } catch(err){
-    console.error("EmailJS error", err);
-    throw err;
-  }
-}
-
-/* deposit submit: ENREGISTRE l'opération en Firestore avec status='pending' puis notifie admin (pas d'automatisation de paiement) */
-depositSubmit.addEventListener('click', async ()=>{
-  depositStatus.textContent = "Soumission en cours...";
-  depositSubmit.disabled = true;
-  try{
-    const amount = parseInt(depositAmount.value);
-    const method = depositNetwork.value;
-    const phone = depositPhone.value.trim();
-    const message = transactionMessage.value.trim();
-    const proof = lastProofBase64;
-    if(!amount||!method||!phone||!message||!proof) throw new Error("Champs manquants");
-
-    const uid = encodeEmailForId(currentUserEmail);
-    const userRef = doc(db,'users', uid);
-
-    // read current
-    const snap = await getDoc(userRef);
-    let balance = 0;
-    let history = [];
-    if(snap.exists()){
-      const d = snap.data();
-      balance = d.balance || 0;
-      history = d.history || [];
-    } else {
-      // create baseline
-      await setDoc(userRef, { balance: 0, history: [], createdAt: serverTimestamp() });
-    }
-
-    // create operation doc inside users/{uid}/operations (or append to history array)
-    // Here we append to 'history' array (careful with large arrays; better to use subcollection in production)
-    const op = {
-      type: 'deposit',
-      amount,
-      method,
-      phone,
-      message,
-      proof: proof, // WARNING: storing base64 in Firestore can be heavy; prefer upload to Firebase Storage in prod
-      status: 'pending',
-      createdAt: serverTimestamp()
-    };
-    // append to history and update (merge)
-    history.unshift(Object.assign({}, op, { createdAt: new Date().toLocaleString() }));
-    await setDoc(userRef, { balance: balance, history: history }, { merge: true });
-
-    // Notify admin
-    await sendNotificationEmail({
-      to_email: ADMIN_EMAIL,
-      subject: `Nouvelle demande de dépôt : ${amount} FCFA`,
-      plain: `Utilisateur: ${currentUserEmail}\nMontant: ${amount}\nMéthode: ${method}\nTéléphone: ${phone}\nMessage: ${message}\nStatut: pending`
-    });
-
-    depositStatus.textContent = "Dépôt enregistré (status pending). L'administrateur a été notifié.";
-    alert("Dépôt enregistré. Attendez la validation manuelle de l'administrateur.");
-    // reset fields
-    depositPack.value=''; depositAmount.value=''; depositNetwork.value=''; depositPhone.value=''; ussdCode.value=''; transactionMessage.value=''; depositProof.value=''; previewImg.style.display='none'; lastProofBase64=''; checkDepositEnable();
-    await loadBalance();
-  }catch(err){
-    showError(depositStatus, "Erreur dépôt: " + (err.message||err));
-    alert("Erreur lors de la soumission: " + (err.message||err));
-  } finally {
-    depositSubmit.disabled = false;
-  }
+/* --- Gestion du formulaire Retrait (similaire mais sans capture) --- */
+const formRetrait = document.getElementById('form-retrait');
+const btn2 = document.getElementById('button2');
+const status2 = document.getElementById('status2');
+formRetrait.addEventListener('submit', e=>{
+  e.preventDefault();
+  btn2.value='Envoi...';
+  emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, formRetrait)
+  .then(()=>{ btn2.value='Envoyer la demande de retrait'; status2.textContent='✅ Demande envoyée avec succès.'; alert('Demande de retrait envoyée ✅'); formRetrait.reset(); })
+  .catch(err=>{ btn2.value='Envoyer la demande de retrait'; status2.textContent='❌ Erreur : '+(err.text||JSON.stringify(err)); alert('Erreur : '+(err.text||JSON.stringify(err))); });
 });
-
-/* withdraw submit: enregistre en pending et notifie admin */
-withdrawSubmit.addEventListener('click', async ()=>{
-  withdrawStatus.textContent = "Soumission en cours...";
-  withdrawSubmit.disabled = true;
-  try{
-    const amount = parseInt(withdrawAmount.value);
-    const method = withdrawNetwork.value;
-    const phone = withdrawPhone.value.trim();
-    const message = withdrawMessage.value.trim();
-    if(!amount||!method||!phone||!message) throw new Error("Champs manquants");
-
-    const uid = encodeEmailForId(currentUserEmail);
-    const userRef = doc(db,'users', uid);
-    const snap = await getDoc(userRef);
-    if(!snap.exists()) throw new Error("Utilisateur introuvable ou solde insuffisant");
-    const data = snap.data();
-    const balance = data.balance || 0;
-    let history = data.history || [];
-    if(balance < amount) throw new Error("Solde insuffisant");
-
-    // register withdraw request (do not change balance until admin validates)
-    const op = { type:'withdraw', amount, method, phone, message, status:'pending', createdAt: serverTimestamp() };
-    history.unshift(Object.assign({}, op, { createdAt: new Date().toLocaleString() }));
-    await setDoc(userRef, { history: history }, { merge: true });
-
-    await sendNotificationEmail({
-      to_email: ADMIN_EMAIL,
-      subject: `Nouvelle demande de retrait : ${amount} FCFA`,
-      plain: `Utilisateur: ${currentUserEmail}\nMontant: ${amount}\nMéthode: ${method}\nTéléphone: ${phone}\nMessage: ${message}\nStatut: pending`
-    });
-
-    withdrawStatus.textContent = "Retrait enregistré (status pending). L'administrateur a été notifié.";
-    alert("Retrait enregistré. L'administrateur doit valider manuellement.");
-    withdrawAmount.value=''; withdrawNetwork.value=''; withdrawPhone.value=''; withdrawMessage.value=''; checkWithdrawEnable();
-  }catch(err){
-    showError(withdrawStatus, "Erreur retrait: " + (err.message||err));
-    alert("Erreur lors de la soumission: " + (err.message||err));
-  } finally { withdrawSubmit.disabled = false; }
-});
-
 </script>
 </body>
 </html>
