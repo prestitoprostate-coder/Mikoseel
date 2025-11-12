@@ -16,11 +16,9 @@
   --card-shadow: rgba(236,72,153,0.3);
 }
 
-/* Général */
 body {
   font-family:"Poppins",sans-serif;
-  margin:0;
-  padding:0;
+  margin:0; padding:0;
   background: linear-gradient(120deg,var(--violet-dark),var(--violet),var(--violet-mid));
   background-size: 300% 300%;
   animation:moveBg 20s ease infinite;
@@ -35,8 +33,8 @@ body {
 
 /* Bulles animées */
 .bubbles{
-  position:fixed;top:0;left:0;width:100%;height:100%;
-  overflow:hidden;z-index:-1;pointer-events:none;
+  position:fixed; top:0; left:0; width:100%; height:100%;
+  overflow:hidden; z-index:-1; pointer-events:none;
 }
 .bubble{
   position:absolute;
@@ -53,11 +51,11 @@ body {
 /* Header */
 header{
   background: linear-gradient(90deg,var(--violet-mid),var(--rose));
-  padding: 12px 24px;
+  padding:12px 24px;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  position: sticky;
+  position:sticky;
   top:0;
   z-index:10;
 }
@@ -229,14 +227,6 @@ li{padding:6px 0; border-bottom:1px solid rgba(168,85,247,0.2);}
     </div>
 
     <div class="card">
-      <h2>graph</h2>
-      <div style="position:relative; width:100%; height:250px; background:rgba(0,0,0,0.2); border-radius:12px; display:flex; align-items:center; justify-content:center;">
-        <img id="dashboardImage" src="image.jpg" alt="Votre image ici" style="max-width:100%; max-height:100%; opacity:0.5; border-radius:12px;">
-        <p style="position:absolute; color:#fff; text-align:center;"></p>
-      </div>
-    </div>
-
-    <div class="card">
       <h2>Activité Publique</h2>
       <div class="public-ticker">
         <div class="public-ticker-content" id="publicTickerContent"></div>
@@ -246,15 +236,15 @@ li{padding:6px 0; border-bottom:1px solid rgba(168,85,247,0.2);}
     <div class="info-cards">
       <div class="info-card">
         <h3>Clé 1</h3>
-        <p>Clé 1 : Permet d’accéder à certaines fonctionnalités avancées. Elle est essentielle pour les utilisateurs expérimentés et donne accès à des informations détaillées sur les transactions et la gestion des packs.</p>
+        <p>Permet d’accéder à certaines fonctionnalités avancées et aux informations détaillées sur les transactions.</p>
       </div>
       <div class="info-card">
         <h3>Clé 2</h3>
-        <p>Clé 2 : Cette clé améliore la sécurité et permet d’activer des options supplémentaires comme le suivi en temps réel et la gestion des historiques détaillés.</p>
+        <p>Améliore la sécurité et active le suivi en temps réel ainsi que la gestion des historiques détaillés.</p>
       </div>
       <div class="info-card">
         <h3>Clé 3</h3>
-        <p>Clé 3 : Donne accès à des informations générales, des rapports et des visualisations pour suivre facilement l’activité globale et les performances de votre compte.</p>
+        <p>Donne accès aux rapports et visualisations pour suivre l’activité globale et les performances.</p>
       </div>
     </div>
   </div>
@@ -264,6 +254,42 @@ li{padding:6px 0; border-bottom:1px solid rgba(168,85,247,0.2);}
     <div class="machine-grid" id="machineCards"></div>
   </div>
 </div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBKyAIcBC8tpWWaYgE_NeZEWJn8AEoyDLQ",
+    authDomain: "valide-28624.firebaseapp.com",
+    projectId: "valide-28624",
+    storageBucket: "valide-28624.appspot.com",
+    messagingSenderId: "483447990733",
+    appId: "1:483447990733:web:25c76bde60f9d78e76bc84"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const urlParams = new URLSearchParams(window.location.search);
+const userEmail = urlParams.get('email'); // dashboard.html?email=user@email.com
+const balanceEl = document.getElementById('balance');
+const historyEl = document.getElementById('history');
+
+if(userEmail){
+  const userRef = doc(db, 'users', userEmail);
+  onSnapshot(userRef, snap => {
+    if(snap.exists()){
+      const data = snap.data();
+      balanceEl.textContent = (data.balance || 0).toLocaleString() + " FCFA";
+      const hist = data.history || [];
+      historyEl.innerHTML = hist.length ? hist.map(h=>{
+        return `<li>${h.date} - ${h.type} ${h.pack ? '- '+h.pack : ''} ${h.gain ? '+ '+h.gain.toLocaleString()+' FCFA' : ''}</li>`;
+      }).join('') : '<li>Aucune transaction pour le moment</li>';
+    }
+  });
+}
+</script>
 
 <script>
 // Bulles
@@ -291,11 +317,7 @@ menuBtn.onclick=()=>menuDropdown.style.display=menuDropdown.style.display==="blo
 document.addEventListener("click",e=>{
   if(!menuBtn.contains(e.target)&&!menuDropdown.contains(e.target)) menuDropdown.style.display="none";
 });
-
-// Déconnexion
-document.getElementById("logoutBtn").onclick=()=>{
-  window.location.href="index.html";
-};
+document.getElementById("logoutBtn").onclick=()=>window.location.href="index.html";
 
 // Onglets
 const tabs=document.querySelectorAll(".tab-btn");
@@ -327,33 +349,26 @@ machines.forEach(m=>{
   div.style.background=`hsl(${m.colorHue},50%,20%)`;
   div.innerHTML=`<h3>${m.name}</h3><p>Invest: ${m.min.toLocaleString()} - ${m.max.toLocaleString()} FCFA<br>Gains/12h: ${m.gain.toLocaleString()} FCFA</p>`;
   div.addEventListener("click",()=>{
-    window.location.href=`deposit.html?pack=${encodeURIComponent(m.name)}&min=${m.min}&max=${m.max}&gain=${m.gain}`;
+    window.location.href=`deposit.html?pack=${encodeURIComponent(m.name)}&min=${m.min}&max=${m.max}&gain=${m.gain}&email=${encodeURIComponent(userEmail)}`;
   });
   machineCards.appendChild(div);
 });
 
-// Activité publique
-const totalActivities=5000;
+// Activité publique (fake)
+const totalActivities=50;
 const tickerContent=document.getElementById("publicTickerContent");
-const activities=[];
 for(let i=0;i<totalActivities;i++){
   const type=Math.random()>0.5?"Dépôt":"Retrait";
   const amount=Math.floor(Math.random()*10000)+1000;
   const phone="+229"+(Math.floor(60000000+Math.random()*39999999));
-  activities.push(`${type} de ${amount.toLocaleString()} FCFA - ${phone}`);
-}
-activities.forEach(a=>{
   const p=document.createElement("p");
-  p.textContent=a;
+  p.textContent=`${type} de ${amount.toLocaleString()} FCFA - ${phone}`;
   tickerContent.appendChild(p);
-});
-let topPos=0;
-const speed=1;
+}
+let topPos=0; const speed=1;
 function scrollTicker(){
   topPos-=speed;
-  if(Math.abs(topPos)>=tickerContent.offsetHeight){
-    topPos=tickerContent.parentElement.offsetHeight;
-  }
+  if(Math.abs(topPos)>=tickerContent.offsetHeight) topPos=tickerContent.parentElement.offsetHeight;
   tickerContent.style.top=topPos+"px";
   requestAnimationFrame(scrollTicker);
 }
