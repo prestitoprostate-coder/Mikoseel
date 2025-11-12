@@ -3,201 +3,241 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mikoseel — Dépôt & USSD immédiat</title>
+<title>Mikoseel — Dépôt & Retrait</title>
 <style>
   body {
     font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #0c001a, #4c1d95);
+    background: linear-gradient(135deg,#0c001a,#4c1d95);
     color: #fff;
     padding: 20px;
     margin: 0;
-    position: relative;
     min-height: 100vh;
+    position: relative;
   }
 
-  /* --- Bulles animées en fond --- */
+  /* Bulles animées */
   .bubbles {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    z-index: 0;
-    pointer-events: none;
+    top:0; left:0; width:100%; height:100%;
+    overflow:hidden; z-index:0; pointer-events:none;
   }
   .bubble {
-    position: absolute;
-    bottom: -100px;
-    background: rgba(255, 255, 255, 0.2);
+    position: absolute; bottom: -100px;
+    background: rgba(255,255,255,0.2);
     border-radius: 50%;
     animation: rise 10s infinite ease-in;
   }
   @keyframes rise {
-    0% {
-      transform: translateY(0) scale(1);
-      opacity: 0.6;
-    }
-    100% {
-      transform: translateY(-110vh) scale(1.3);
-      opacity: 0;
-    }
+    0% { transform: translateY(0) scale(1); opacity:0.6; }
+    100% { transform: translateY(-110vh) scale(1.3); opacity:0; }
   }
 
-  h1 {
-    text-align: center;
-    margin-bottom: 30px;
+  h1 { text-align:center; margin-bottom:20px; position:relative; z-index:1; }
+
+  /* Onglets */
+  .tab-buttons {
+    display:flex;
+    justify-content:center;
+    margin-bottom:20px;
     position: relative;
     z-index: 1;
   }
-
-  form {
-    max-width: 720px;
-    margin: 0 auto 80px auto;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    position: relative;
-    z-index: 1;
+  .tab-buttons button {
+    background: rgba(255,255,255,0.1);
+    border:none;
+    color:#fff;
+    padding:10px 20px;
+    margin:0 5px;
+    cursor:pointer;
+    border-radius:6px;
+    font-weight:600;
+    transition:0.2s all;
+  }
+  .tab-buttons button.active {
+    background: linear-gradient(90deg,#6d28d9,#ec4899);
   }
 
-  .field { margin-bottom: 12px; }
-  label { display: block; margin-bottom: 6px; font-weight: 600; }
+  .tab-content {
+    display:none;
+    max-width:720px;
+    margin:0 auto 80px auto;
+    background: rgba(255,255,255,0.05);
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 4px 20px rgba(0,0,0,0.3);
+    position: relative;
+    z-index:1;
+  }
+  .tab-content.active { display:block; }
+
+  .field { margin-bottom:12px; }
+  label { display:block; margin-bottom:6px; font-weight:600; }
   input, select, textarea {
-    width: 100%;
-    padding: 10px;
-    border: none;
-    border-radius: 6px;
-    background: rgba(255, 255, 255, 0.08);
-    color: #fff;
+    width:100%; padding:10px; border:none; border-radius:6px;
+    background: rgba(255,255,255,0.08); color:#fff;
   }
-  input::placeholder, textarea::placeholder { color: #ddd; }
-  button, input[type="submit"] {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 6px;
-    background: linear-gradient(90deg, #6d28d9, #ec4899);
-    color: #fff;
-    font-weight: bold;
-    cursor: pointer;
+  input::placeholder, textarea::placeholder { color:#ddd; }
+  button.submit-btn {
+    width:100%; padding:12px; border:none; border-radius:6px;
+    background: linear-gradient(90deg,#6d28d9,#ec4899);
+    color:#fff; font-weight:bold; cursor:pointer;
   }
 
   .ussd-box {
-    margin-top: 12px;
-    padding: 15px;
-    background: rgba(236, 72, 153, 0.15);
-    color: #fff;
-    font-size: 20px;
-    font-weight: bold;
-    border-radius: 8px;
-    text-align: center;
-    cursor: pointer;
-    transition: 0.2s all;
+    margin-top:12px; padding:15px;
+    background: rgba(236,72,153,0.15);
+    color:#fff; font-size:20px; font-weight:bold;
+    border-radius:8px; text-align:center; cursor:pointer;
+    transition:0.2s all;
   }
-  .ussd-box:hover {
-    background: rgba(236, 72, 153, 0.3);
-  }
+  .ussd-box:hover { background: rgba(236,72,153,0.3); }
 
-  .muted { color: #d6c6ff; font-size: 13px; margin-top: 8px; }
-
-  footer {
-    text-align: center;
-    padding: 20px;
-    font-size: 13px;
-    color: #d1caff;
-    position: relative;
-    z-index: 1;
-  }
+  .muted { color:#d6c6ff; font-size:13px; margin-top:8px; }
 </style>
 </head>
 <body>
 
 <div class="bubbles" id="bubbles"></div>
 
-<h1>📩 Mikoseel — Dépôt & USSD instantané</h1>
+<h1>📩 Mikoseel — Dépôt & Retrait</h1>
 
-<form id="form">
-  <div class="field">
-    <label for="name">Nom complet</label>
-    <input type="text" name="name" id="name" placeholder="Ton nom complet" required>
-  </div>
+<div class="tab-buttons">
+  <button class="active" data-tab="deposit">💰 Dépôt</button>
+  <button data-tab="withdraw">🔻 Retrait</button>
+</div>
 
-  <div class="field">
-    <label for="user_name">Identifiant utilisateur</label>
-    <input type="text" name="user_name" id="user_name" placeholder="Pseudo ou ID" required>
-  </div>
+<!-- FORMULAIRE DEPOT -->
+<div id="deposit" class="tab-content active">
+  <form id="form-deposit">
+    <div class="field">
+      <label for="dep_name">Nom complet</label>
+      <input type="text" name="name" id="dep_name" required>
+    </div>
+    <div class="field">
+      <label for="dep_user">Identifiant utilisateur</label>
+      <input type="text" name="user_name" id="dep_user" required>
+    </div>
+    <div class="field">
+      <label for="dep_email">Adresse e-mail</label>
+      <input type="email" name="user_email" id="dep_email" required>
+    </div>
+    <div class="field">
+      <label for="dep_pack">Pack choisi</label>
+      <select name="pack" id="dep_pack" required>
+        <option value="">-- Sélectionner un pack --</option>
+        <option value="Bronze">Pack Bronze</option>
+        <option value="Silver">Pack Silver</option>
+        <option value="Gold">Pack Gold</option>
+        <option value="Diamond">Pack Diamond</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="dep_amount">Montant (FCFA)</label>
+      <input type="number" name="amount" id="dep_amount" required>
+    </div>
+    <div class="field">
+      <label for="dep_method">Réseau</label>
+      <select name="method" id="dep_method" required>
+        <option value="">-- Choisir un réseau --</option>
+        <option value="mtn">MTN</option>
+        <option value="moov">Moov</option>
+        <option value="celtiis">Celtiis</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="dep_phone">Numéro</label>
+      <input type="tel" name="phone" id="dep_phone" required>
+    </div>
+    <div id="dep_ussd" class="ussd-box" title="Clique pour copier le code">Le code USSD apparaîtra ici</div>
+    <div class="field">
+      <label for="dep_message">Message ou référence (obligatoire, copier-coller exactement)</label>
+      <textarea name="message" id="dep_message" rows="2" placeholder="Copiez/collez le message de transaction" required></textarea>
+    </div>
+    <button type="submit" class="submit-btn">Envoyer le dépôt</button>
+    <p class="muted" id="dep_status"></p>
+  </form>
+</div>
 
-  <div class="field">
-    <label for="user_email">Adresse e-mail</label>
-    <input type="email" name="user_email" id="user_email" placeholder="ton.email@exemple.com" required>
-  </div>
-
-  <div class="field">
-    <label for="pack">Pack choisi</label>
-    <select name="pack" id="pack" required>
-      <option value="">-- Sélectionner un pack --</option>
-      <option value="Bronze">Pack Bronze (2 000 – 5 000 FCFA)</option>
-      <option value="Silver">Pack Silver (5 000 – 10 000 FCFA)</option>
-      <option value="Gold">Pack Gold (10 000 – 50 000 FCFA)</option>
-      <option value="Diamond">Pack Diamond (50 000 – 1 500 000 FCFA)</option>
-    </select>
-  </div>
-
-  <div class="field">
-    <label for="amount">Montant (FCFA)</label>
-    <input type="number" name="amount" id="amount" placeholder="Ex: 5000" required>
-  </div>
-
-  <div class="field">
-    <label for="method">Réseau</label>
-    <select name="method" id="method" required>
-      <option value="">-- Choisir un réseau --</option>
-      <option value="mtn">MTN</option>
-      <option value="moov">Moov</option>
-      <option value="celtiis">Celtiis</option>
-    </select>
-  </div>
-
-  <div class="field">
-    <label for="phone">Numéro</label>
-    <input type="tel" name="phone" id="phone" placeholder="Ex: 60000000" required>
-  </div>
-
-  <div id="ussdBox" class="ussd-box" title="Clique pour copier le code">Le code USSD apparaîtra ici</div>
-
-  <div class="field">
-    <label for="message">copie le Message au complet avec référence (obligatoire)</label>
-    <textarea name="message" id="message" rows="2" placeholder="Référence de la transaction" required></textarea>
-  </div>
-
-  <input type="submit" id="button" value="Envoyer le mail">
-  <p id="status" class="muted"></p>
-</form>
-
-<footer>© 2025 Mikoseel. Tous droits réservés.</footer>
+<!-- FORMULAIRE RETRAIT -->
+<div id="withdraw" class="tab-content">
+  <form id="form-withdraw">
+    <div class="field">
+      <label for="ret_name">Nom complet</label>
+      <input type="text" name="name" id="ret_name" required>
+    </div>
+    <div class="field">
+      <label for="ret_user">Identifiant utilisateur</label>
+      <input type="text" name="user_name" id="ret_user" required>
+    </div>
+    <div class="field">
+      <label for="ret_email">Adresse e-mail</label>
+      <input type="email" name="user_email" id="ret_email" required>
+    </div>
+    <div class="field">
+      <label for="ret_amount">Montant à retirer (FCFA)</label>
+      <input type="number" name="amount" id="ret_amount" required>
+    </div>
+    <div class="field">
+      <label for="ret_method">Réseau pour retrait</label>
+      <select name="method" id="ret_method" required>
+        <option value="">-- Choisir un réseau --</option>
+        <option value="mtn">MTN</option>
+        <option value="moov">Moov</option>
+        <option value="celtiis">Celtiis</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="ret_phone">Numéro</label>
+      <input type="tel" name="phone" id="ret_phone" required>
+    </div>
+    <div id="ret_ussd" class="ussd-box" title="Clique pour copier le code">Le code USSD apparaîtra ici</div>
+    <div class="field">
+      <label for="ret_message">Message ou référence (obligatoire, copier-coller exactement)</label>
+      <textarea name="message" id="ret_message" rows="2" placeholder="Copiez/collez le message de transaction" required></textarea>
+    </div>
+    <button type="submit" class="submit-btn">Envoyer le retrait</button>
+    <p class="muted" id="ret_status"></p>
+  </form>
+</div>
 
 <!-- EmailJS SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
-emailjs.init('6BLdU6p0YUHLeqINk'); // ta clé publique EmailJS
-const SERVICE_ID = 'default_service';
-const TEMPLATE_ID = 'template_khilsn7';
+emailjs.init('6BLdU6p0YUHLeqINk'); // clé publique EmailJS
 
-const form = document.getElementById('form');
-const btn = document.getElementById('button');
-const statusEl = document.getElementById('status');
-const phoneEl = document.getElementById('phone');
-const amountEl = document.getElementById('amount');
-const methodEl = document.getElementById('method');
-const ussdBox = document.getElementById('ussdBox');
+/* --- Onglets --- */
+const tabButtons = document.querySelectorAll('.tab-buttons button');
+const tabContents = document.querySelectorAll('.tab-content');
+tabButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    tabButtons.forEach(b => b.classList.remove('active'));
+    tabContents.forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+  });
+});
 
-/* Générateur USSD */
-function makeUSSD(network, amount) {
-  if (!network || !amount) return '';
-  amount = parseInt(amount) || 0;
-  switch (network) {
+/* --- Bulles --- */
+function createBubbles() {
+  const container = document.getElementById('bubbles');
+  for(let i=0;i<25;i++){
+    const bubble = document.createElement('div');
+    bubble.classList.add('bubble');
+    const size = Math.random()*60+10;
+    bubble.style.width = bubble.style.height = size+'px';
+    bubble.style.left = Math.random()*100+'%';
+    bubble.style.animationDuration = (6+Math.random()*8)+'s';
+    bubble.style.animationDelay = Math.random()*4+'s';
+    container.appendChild(bubble);
+  }
+}
+createBubbles();
+
+/* --- Générateur USSD simple --- */
+function makeUSSD(network, amount){
+  if(!network||!amount)return '';
+  amount=parseInt(amount)||0;
+  switch(network){
     case 'mtn': return `*880*41*177125*${amount}#`;
     case 'celtiis': return `*889*6*1*ESS02*${amount}#`;
     case 'moov': return `*851*4*1*264081*${amount}#`;
@@ -205,69 +245,41 @@ function makeUSSD(network, amount) {
   }
 }
 
-/* Mise à jour du code USSD */
-function updateUSSD() {
-  const network = methodEl.value;
-  const amount = amountEl.value;
-  const code = makeUSSD(network, amount);
-  ussdBox.textContent = code ? code : 'Le code USSD apparaîtra ici';
-}
-[phoneEl, amountEl, methodEl].forEach(el => el.addEventListener('input', updateUSSD));
-updateUSSD();
-
-/* Copie du code au clic */
-ussdBox.addEventListener('click', () => {
-  const txt = ussdBox.textContent.trim();
-  if (!txt) return;
-  navigator.clipboard.writeText(txt).then(() => {
-    alert('Code USSD copié ✅ : ' + txt);
+/* Dépôt USSD */
+const dep_ussd = document.getElementById('dep_ussd');
+['dep_method','dep_amount'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', ()=>{
+    dep_ussd.textContent = makeUSSD(document.getElementById('dep_method').value,document.getElementById('dep_amount').value)||'Le code USSD apparaîtra ici';
   });
 });
+dep_ussd.addEventListener('click',()=>{navigator.clipboard.writeText(dep_ussd.textContent.trim());alert('Code USSD copié ✅');});
 
-/* Envoi du mail EmailJS */
-form.addEventListener('submit', function (event) {
-  event.preventDefault();
-  btn.value = 'Envoi...';
-  statusEl.textContent = '';
-
-  const message = document.getElementById('message').value.trim();
-  if (!message) {
-    alert('⚠️ copie tout Le message de transaction est obligatoire.');
-    btn.value = 'Envoyer la demande';
-    return;
-  }
-
-  emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, this)
-    .then(() => {
-      btn.value = 'Envoyer le mail';
-      statusEl.textContent = '✅ Mail envoyé avec succès.';
-      alert('Mail envoyé ✅');
-      form.reset();
-      ussdBox.textContent = 'Le code USSD apparaîtra ici';
-    })
-    .catch((err) => {
-      btn.value = 'Envoyer le mail';
-      statusEl.textContent = '❌ Erreur : ' + (err.text || JSON.stringify(err));
-      alert('Erreur mail : ' + (err.text || JSON.stringify(err)));
-    });
+/* Retrait USSD */
+const ret_ussd = document.getElementById('ret_ussd');
+['ret_method','ret_amount'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', ()=>{
+    ret_ussd.textContent = makeUSSD(document.getElementById('ret_method').value,document.getElementById('ret_amount').value)||'Le code USSD apparaîtra ici';
+  });
 });
+ret_ussd.addEventListener('click',()=>{navigator.clipboard.writeText(ret_ussd.textContent.trim());alert('Code USSD copié ✅');});
 
-/* Création des bulles */
-function createBubbles() {
-  const container = document.getElementById('bubbles');
-  for (let i = 0; i < 25; i++) {
-    const bubble = document.createElement('div');
-    bubble.classList.add('bubble');
-    const size = Math.random() * 60 + 10;
-    bubble.style.width = `${size}px`;
-    bubble.style.height = `${size}px`;
-    bubble.style.left = `${Math.random() * 100}%`;
-    bubble.style.animationDuration = `${6 + Math.random() * 8}s`;
-    bubble.style.animationDelay = `${Math.random() * 4}s`;
-    container.appendChild(bubble);
-  }
+/* --- EmailJS envoi --- */
+function setupForm(formId,statusId){
+  const form=document.getElementById(formId);
+  const status=document.getElementById(statusId);
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    const message=form.querySelector('textarea[name="message"]').value.trim();
+    if(!message){ alert('⚠️ Copiez/collez le message de transaction'); return; }
+    const btn=form.querySelector('.submit-btn');
+    btn.textContent='Envoi...';
+    emailjs.sendForm('default_service','template_khilsn7',this)
+      .then(()=>{btn.textContent='Envoyer'; status.textContent='✅ Mail envoyé avec succès.'; form.reset();})
+      .catch(err=>{btn.textContent='Envoyer'; status.textContent='❌ Erreur : '+(err.text||JSON.stringify(err)); alert('Erreur mail : '+(err.text||JSON.stringify(err)));});
+  });
 }
-createBubbles();
+setupForm('form-deposit','dep_status');
+setupForm('form-withdraw','ret_status');
 </script>
 </body>
 </html>
