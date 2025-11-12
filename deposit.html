@@ -13,7 +13,6 @@
   }
   h1{text-align:center;margin-bottom:30px;}
 
-  /* --- Onglets --- */
   .tabs{
     display:flex;
     justify-content:center;
@@ -74,14 +73,12 @@
     border:2px solid #ec4899;border-radius:10px;text-align:center;
   }
   .muted{color:#d6c6ff;font-size:13px;margin-top:8px;}
-  .small{font-size:13px;color:#e0d7ff;margin-top:6px;}
 </style>
 </head>
 <body>
 
 <h1>📩 Mikoseel — Dépôt & Retrait</h1>
 
-<!-- Onglets -->
 <div class="tabs">
   <div class="tab active" data-target="depot">Dépôt</div>
   <div class="tab" data-target="retrait">Retrait</div>
@@ -90,22 +87,22 @@
 <!-- FORMULAIRE DÉPÔT -->
 <form id="form-depot" class="form-tab">
   <div class="field">
-    <label for="name">Nom complet</label>
-    <input type="text" name="name" id="name" placeholder="Ton nom complet" required>
+    <label>Nom complet</label>
+    <input type="text" name="name" placeholder="Ton nom complet" required>
   </div>
 
   <div class="field">
-    <label for="user_name">Identifiant utilisateur</label>
-    <input type="text" name="user_name" id="user_name" placeholder="Pseudo ou ID" required>
+    <label>Identifiant utilisateur</label>
+    <input type="text" name="user_name" placeholder="Pseudo ou ID" required>
   </div>
 
   <div class="field">
-    <label for="user_email">Adresse e-mail</label>
-    <input type="email" name="user_email" id="user_email" placeholder="ton.email@exemple.com" required>
+    <label>Adresse e-mail</label>
+    <input type="email" name="user_email" placeholder="ton.email@exemple.com" required>
   </div>
 
   <div class="field">
-    <label for="pack">Pack choisi</label>
+    <label>Pack choisi</label>
     <select name="pack" id="pack" required>
       <option value="">-- Sélectionner un pack --</option>
       <option value="Bronze">Pack Bronze (2 000 – 5 000 FCFA)</option>
@@ -116,12 +113,12 @@
   </div>
 
   <div class="field">
-    <label for="amount">Montant (FCFA)</label>
+    <label>Montant (FCFA)</label>
     <input type="number" name="amount" id="amount" placeholder="Ex: 5000" required>
   </div>
 
   <div class="field">
-    <label for="method">Réseau</label>
+    <label>Réseau</label>
     <select name="method" id="method" required>
       <option value="">-- Choisir un réseau --</option>
       <option value="mtn">MTN</option>
@@ -131,19 +128,19 @@
   </div>
 
   <div class="field">
-    <label for="phone">Numéro</label>
+    <label>Numéro</label>
     <input type="tel" name="phone" id="phone" placeholder="Ex: 60000000" required>
   </div>
 
-  <div id="ussdBox" class="ussd-box" title="Clique pour copier le code">Le code USSD apparaîtra ici</div>
+  <div id="ussdBox" class="ussd-box">Le code USSD apparaîtra ici</div>
 
   <div class="field">
-    <label for="message">Message ou référence</label>
-    <textarea name="message" id="message" rows="2" placeholder="Référence de la transaction" required></textarea>
+    <label>Message ou référence</label>
+    <textarea name="message" rows="2" placeholder="Référence de la transaction" required></textarea>
   </div>
 
   <div class="field">
-    <label for="proof">Capture de paiement</label>
+    <label>Capture de paiement</label>
     <input type="file" id="proofFile" accept="image/*" required>
     <input type="hidden" name="proof" id="proof">
     <img id="preview" alt="Aperçu preuve">
@@ -156,28 +153,28 @@
 <!-- FORMULAIRE RETRAIT -->
 <form id="form-retrait" class="form-tab" style="display:none;">
   <div class="field">
-    <label for="name2">Nom complet</label>
-    <input type="text" name="name2" id="name2" placeholder="Ton nom complet" required>
+    <label>Nom complet</label>
+    <input type="text" name="name2" placeholder="Ton nom complet" required>
   </div>
 
   <div class="field">
-    <label for="user_name2">Identifiant utilisateur</label>
-    <input type="text" name="user_name2" id="user_name2" placeholder="Pseudo ou ID" required>
+    <label>Identifiant utilisateur</label>
+    <input type="text" name="user_name2" placeholder="Pseudo ou ID" required>
   </div>
 
   <div class="field">
-    <label for="phone2">Numéro de retrait</label>
-    <input type="tel" name="phone2" id="phone2" placeholder="Ex: 60000000" required>
+    <label>Numéro de retrait</label>
+    <input type="tel" name="phone2" placeholder="Ex: 60000000" required>
   </div>
 
   <div class="field">
-    <label for="amount2">Montant à retirer (FCFA)</label>
-    <input type="number" name="amount2" id="amount2" placeholder="Ex: 5000" required>
+    <label>Montant à retirer (FCFA)</label>
+    <input type="number" name="amount2" placeholder="Ex: 5000" required>
   </div>
 
   <div class="field">
-    <label for="method2">Réseau</label>
-    <select name="method2" id="method2" required>
+    <label>Réseau</label>
+    <select name="method2" required>
       <option value="">-- Choisir un réseau --</option>
       <option value="mtn">MTN</option>
       <option value="moov">Moov</option>
@@ -186,8 +183,8 @@
   </div>
 
   <div class="field">
-    <label for="message2">Message ou remarque</label>
-    <textarea name="message2" id="message2" rows="2" placeholder="Remarques ou référence"></textarea>
+    <label>Message ou remarque</label>
+    <textarea name="message2" rows="2" placeholder="Remarques ou référence"></textarea>
   </div>
 
   <input type="submit" id="button2" value="Envoyer la demande de retrait">
@@ -203,23 +200,21 @@
 <!-- EmailJS SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
-emailjs.init('6BLdU6p0YUHLeqINk'); 
+emailjs.init('6BLdU6p0YUHLeqINk');
 const SERVICE_ID = 'default_service';
 const TEMPLATE_ID = 'template_khilsn7';
 
-/* --- Gestion des onglets --- */
-const tabs = document.querySelectorAll('.tab');
-const forms = document.querySelectorAll('.form-tab');
-tabs.forEach(tab=>{
+/* --- Onglets --- */
+document.querySelectorAll('.tab').forEach(tab=>{
   tab.addEventListener('click', ()=>{
-    tabs.forEach(t=>t.classList.remove('active'));
-    forms.forEach(f=>f.style.display='none');
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.form-tab').forEach(f=>f.style.display='none');
     tab.classList.add('active');
     document.getElementById('form-'+tab.dataset.target).style.display='block';
   });
 });
 
-/* --- Code USSD --- */
+/* --- Générateur USSD --- */
 function makeUSSD(network, amount){
   if(!network || !amount) return '';
   amount = parseInt(amount) || 0;
@@ -240,32 +235,44 @@ function updateUSSD(){
 }
 [phoneEl, amountEl, methodEl].forEach(el=>el.addEventListener('input', updateUSSD));
 
-/* --- Copie du code USSD --- */
 ussdBox.addEventListener('click', ()=>{
   const txt = ussdBox.textContent.trim();
   if(txt && txt.includes('*')) navigator.clipboard.writeText(txt).then(()=>alert('Code USSD copié ✅ : ' + txt));
 });
 
-/* --- Gestion de l’envoi EmailJS (formulaire dépôt) --- */
-const formDepot = document.getElementById('form-depot');
-const btn = document.getElementById('button');
+/* --- Compression automatique de l’image avant envoi --- */
 const proofFile = document.getElementById('proofFile');
 const preview = document.getElementById('preview');
 const proofHidden = document.getElementById('proof');
-const statusEl = document.getElementById('status');
-
 proofFile.addEventListener('change', ()=>{
   const file = proofFile.files[0];
   if(!file){ preview.style.display='none'; proofHidden.value=''; return; }
+
   const reader = new FileReader();
   reader.onload = e=>{
-    proofHidden.value = e.target.result;
-    preview.src = e.target.result;
-    preview.style.display='block';
+    const img = new Image();
+    img.src = e.target.result;
+    img.onload = ()=>{
+      const canvas = document.createElement('canvas');
+      const maxWidth = 600;
+      const scale = Math.min(1, maxWidth / img.width);
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const reducedData = canvas.toDataURL('image/jpeg', 0.6);
+      proofHidden.value = reducedData;
+      preview.src = reducedData;
+      preview.style.display = 'block';
+    };
   };
   reader.readAsDataURL(file);
 });
 
+/* --- Envoi EmailJS dépôt --- */
+const formDepot = document.getElementById('form-depot');
+const btn = document.getElementById('button');
+const statusEl = document.getElementById('status');
 formDepot.addEventListener('submit', e=>{
   e.preventDefault();
   btn.value='Envoi...';
@@ -275,7 +282,7 @@ formDepot.addEventListener('submit', e=>{
   .catch(err=>{ btn.value='Envoyer le mail'; statusEl.textContent='❌ Erreur : '+(err.text||JSON.stringify(err)); alert('Erreur mail : '+(err.text||JSON.stringify(err))); });
 });
 
-/* --- Gestion du formulaire Retrait (similaire mais sans capture) --- */
+/* --- Envoi EmailJS retrait --- */
 const formRetrait = document.getElementById('form-retrait');
 const btn2 = document.getElementById('button2');
 const status2 = document.getElementById('status2');
