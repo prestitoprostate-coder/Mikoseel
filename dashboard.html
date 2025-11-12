@@ -278,6 +278,7 @@ const historyEl = document.getElementById('history');
 
 if(userEmail){
   const userRef = doc(db, 'users', userEmail);
+  // mise à jour en temps réel du solde et de l'historique
   onSnapshot(userRef, snap => {
     if(snap.exists()){
       const data = snap.data();
@@ -325,7 +326,7 @@ const sections=document.querySelectorAll(".section");
 tabs.forEach(tab=>{
   tab.addEventListener("click",()=>{
     if(tab.id==="retraitBtn"){
-      window.location.href="deposit.html";
+      window.location.href="deposit.html?email="+encodeURIComponent(userEmail);
       return;
     }
     tabs.forEach(t=>t.classList.remove("active"));
