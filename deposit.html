@@ -168,7 +168,7 @@
   <div id="ussdBox" class="ussd-box" title="Clique pour copier le code">Le code USSD apparaîtra ici</div>
 
   <div class="field">
-    <label for="message">Message ou référence (obligatoire)</label>
+    <label for="message">copie le Message au complet avec référence (obligatoire)</label>
     <textarea name="message" id="message" rows="2" placeholder="Référence de la transaction" required></textarea>
   </div>
 
@@ -232,8 +232,8 @@ form.addEventListener('submit', function (event) {
 
   const message = document.getElementById('message').value.trim();
   if (!message) {
-    alert('⚠️ Le message de transaction est obligatoire.');
-    btn.value = 'Envoyer le mail';
+    alert('⚠️ copie tout Le message de transaction est obligatoire.');
+    btn.value = 'Envoyer la demande';
     return;
   }
 
