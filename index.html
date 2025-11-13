@@ -15,9 +15,7 @@
   --danger:#f87171;
   font-family:"Poppins",system-ui,sans-serif;
 }
-
-*{box-sizing:border-box;margin:0;padding:0}
-
+*{box-sizing:border-box;margin:0;padding:0;}
 body{
   background:linear-gradient(120deg,var(--violet-dark),var(--violet),var(--violet-mid));
   background-size:300% 300%;
@@ -28,315 +26,81 @@ body{
   flex-direction:column;
   overflow-y:auto;
 }
-
 @keyframes moveBg{
   0%{background-position:0% 50%;}
   50%{background-position:100% 50%;}
   100%{background-position:0% 50%;}
 }
-
-/* header */
-header{
-  width:100%;
-  background:linear-gradient(90deg,var(--violet-mid),var(--rose));
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:12px 24px;
-  box-shadow:0 3px 15px rgba(0,0,0,0.2);
-  position:sticky;
-  top:0;
-  z-index:100;
-}
-header .logo{
-  font-size:28px;
-  font-weight:700;
-  color:#fff;
-}
-header nav a{
-  color:#fff;
-  margin-left:20px;
-  text-decoration:none;
-  font-weight:600;
-  transition:0.3s;
-}
-header nav a:hover{opacity:0.8;}
-
-/* bulles */
-.bubbles{
-  position:fixed;top:0;left:0;width:100%;height:100%;
-  overflow:hidden;z-index:-1;pointer-events:none;
-}
-.bubble{
-  position:absolute;
-  bottom:-100px;
-  background:radial-gradient(circle at 30% 30%,rgba(236,72,153,0.6),rgba(124,58,237,0.1));
-  border-radius:50%;
-  animation:rise linear infinite;
-}
-@keyframes rise{
-  from{transform:translateY(0) scale(1);opacity:0.8;}
-  to{transform:translateY(-110vh) scale(1.5);opacity:0;}
-}
-
-/* container principal */
-.wrap{
-  display:flex;
-  justify-content:center;
-  align-items:flex-start;
-  gap:30px;
-  flex-wrap:wrap;
-  padding:40px 20px;
-}
-
-.panel{
-  background:rgba(20,0,40,0.6);
-  border:1px solid rgba(168,85,247,0.3);
-  border-radius:16px;
-  padding:32px;
-  box-shadow:0 0 25px rgba(168,85,247,0.3);
-  backdrop-filter:blur(6px);
-  width:420px;
-  flex-shrink:0;
-}
-
-.brand{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  margin-bottom:18px;
-}
-.brand .logo-panel{
-  width:64px;height:64px;border-radius:16px;
-  background:linear-gradient(135deg,var(--violet-light),var(--rose));
-  display:flex;align-items:center;justify-content:center;
-  color:#fff;font-weight:700;font-size:28px;
-  box-shadow:0 0 25px rgba(236,72,153,0.5);
-}
+.wrap{display:flex;justify-content:center;align-items:flex-start;gap:30px;flex-wrap:wrap;padding:40px 20px;}
+.panel{background:rgba(20,0,40,0.6);border:1px solid rgba(168,85,247,0.3);border-radius:16px;padding:32px;box-shadow:0 0 25px rgba(168,85,247,0.3);backdrop-filter:blur(6px);width:420px;}
 h1{font-size:24px;color:var(--violet-light);margin:0;}
-p.lead{color:#c4b5fd;font-size:14px;margin-top:6px;}
-
 form{margin-top:20px;display:flex;flex-direction:column;gap:14px;}
-input{
-  padding:12px;border-radius:10px;
-  border:1px solid rgba(168,85,247,0.4);
-  background:rgba(76,29,149,0.4);
-  color:var(--text-light);
-  outline:none;transition:0.3s;
-}
-input:focus{
-  border-color:var(--rose);
-  background:rgba(236,72,153,0.2);
-}
-button.primary{
-  background:linear-gradient(90deg,var(--violet-mid),var(--rose));
-  color:#fff;border:none;padding:12px;border-radius:10px;
-  font-weight:600;cursor:pointer;transition:0.3s;
-  box-shadow:0 0 15px rgba(236,72,153,0.3);
-}
-button.primary:hover{
-  transform:scale(1.03);
-  box-shadow:0 0 25px rgba(236,72,153,0.6);
-}
-button.ghost{
-  background:transparent;border:1px solid var(--violet-light);
-  color:var(--violet-light);padding:10px;border-radius:10px;cursor:pointer;
-  transition:0.3s;
-}
-button.ghost:hover{background:rgba(236,72,153,0.1);}
-.muted{font-size:13px;color:#c4b5fd;}
+input{padding:12px;border-radius:10px;border:1px solid rgba(168,85,247,0.4);background:rgba(76,29,149,0.4);color:var(--text-light);outline:none;transition:0.3s;}
+input:focus{border-color:var(--rose);background:rgba(236,72,153,0.2);}
+button.primary{background:linear-gradient(90deg,var(--violet-mid),var(--rose));color:#fff;border:none;padding:12px;border-radius:10px;font-weight:600;cursor:pointer;transition:0.3s;}
+button.primary:hover{transform:scale(1.03);}
 .error{color:var(--danger);font-weight:600;}
-.or{display:flex;align-items:center;gap:10px;margin:14px 0;color:#c4b5fd;}
-.or div{height:1px;background:rgba(168,85,247,0.3);flex:1;border-radius:4px;}
-.info{font-size:13px;color:#a78bfa;margin-top:10px;text-align:center;}
-.right{
-  display:flex;flex-direction:column;gap:20px;
-  max-width:400px;
-}
-.feature{
-  background:rgba(236,72,153,0.1);
-  padding:16px;border-radius:14px;
-  border:1px solid rgba(236,72,153,0.3);
-  box-shadow:0 0 10px rgba(236,72,153,0.15);
-}
-.feature .icon{font-size:22px;margin-bottom:6px;color:var(--rose);}
-footer.main-footer{
-  width:100%;
-  background:rgba(0,0,0,0.6);
-  text-align:center;
-  padding:16px;
-  font-size:12px;
-  color:#d8b4fe;
-  margin-top:auto;
-}
+.muted{font-size:13px;color:#c4b5fd;text-align:center;margin-top:6px;}
 </style>
 </head>
 <body>
-
-<div class="bubbles" id="bubbles"></div>
-
-<header>
-  <div class="logo">Mikoseel</div>
-  <nav>
-    <a href="#" onclick="isRegister=true;renderAuth();">Créer compte</a>
-    <a href="info.html">Info</a>
-  </nav>
-</header>
-
 <div class="wrap">
   <div class="panel">
-    <div class="brand">
-      <div class="logo-panel">MS</div>
-      <div>
-        <h1>Mikoseel Euro</h1>
-        <p class="lead">Connexion / Inscription.</p>
-      </div>
-    </div>
-
-    <div id="authBox"></div>
-
-    <div class="info">
-      <small>Les données sont stockées localement dans ton navigateur.</small><br>
-      <small>Option parrainage : si vous ajoutez le mail d’un utilisateur existant lors de l’inscription, celui-ci gagne 500 FCFA et vous recevez 250 FCFA.</small>
-    </div>
-  </div>
-
-  <div class="right">
-    <div class="feature">
-      <div class="icon">💳</div>
-      <div><strong>Comptes Gérés</strong><br><span class="muted">Numéros automatiques et suivi détaillé.</span></div>
-    </div>
-    <div class="feature">
-      <div class="icon">⚡</div>
-      <div><strong>Dépôts & Retraits</strong><br><span class="muted">Simulation locale avec numéros générés.</span></div>
-    </div>
-    <div class="feature">
-      <div class="icon">🛡️</div>
-      <div><strong>Admin</strong><br><span class="muted">Approuve ou refuse les opérations en local.</span></div>
-    </div>
+    <h1>Connexion</h1>
+    <form id="loginForm">
+      <input type="email" id="email" placeholder="Adresse email" required />
+      <input type="password" id="password" placeholder="Mot de passe" required />
+      <button type="submit" class="primary">Se connecter</button>
+    </form>
+    <div id="msg" class="muted"></div>
   </div>
 </div>
 
-<footer class="main-footer">
-  En utilisant Mikoseel, vous acceptez nos <a href="#">conditions générales</a> et <a href="#">politique de confidentialité</a>.
-</footer>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 
-<script>
-/* --- bulles --- */
-function createBubbles(n=25){
-  const container=document.getElementById('bubbles');
-  for(let i=0;i<n;i++){
-    const b=document.createElement('div');
-    b.className='bubble';
-    const size=20+Math.random()*60;
-    b.style.width=b.style.height=size+'px';
-    b.style.left=Math.random()*100+'%';
-    b.style.animationDuration=(8+Math.random()*10)+'s';
-    b.style.animationDelay=(Math.random()*5)+'s';
-    container.appendChild(b);
-  }
-}
-createBubbles();
+// Config Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyBKyAIcBC8tpWWaYgE_NeZEWJn8AEoyDLQ",
+    authDomain: "valide-28624.firebaseapp.com",
+    projectId: "valide-28624",
+    storageBucket: "valide-28624.appspot.com",
+    messagingSenderId: "483447990733",
+    appId: "1:483447990733:web:25c76bde60f9d78e76bc84"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-/* --- Storage & Auth --- */
-const STORAGE_KEY='bank_app_data_v1';
-function loadData(){
-  const raw=localStorage.getItem(STORAGE_KEY);
-  if(!raw){
-    const def={users:[],pendingDeposits:[],pendingWithdraws:[],admin:{username:'admin',password:'admin123'}};
-    localStorage.setItem(STORAGE_KEY,JSON.stringify(def));
-    return def;
-  }
-  return JSON.parse(raw);
-}
-function saveData(d){localStorage.setItem(STORAGE_KEY,JSON.stringify(d));}
+const loginForm = document.getElementById('loginForm');
+const msgEl = document.getElementById('msg');
 
-function genAccountNumber(){
-  const a=Math.floor(1000+Math.random()*9000);
-  const b=Math.floor(1000+Math.random()*9000);
-  return `MS-${a}-${b}`;
-}
-
-const authBox=document.getElementById('authBox');
-let isRegister=false;
-
-function renderAuth(){
-  authBox.innerHTML=`
-    <h2 style="color:var(--violet-light);text-align:center;">${isRegister?'Créer un compte':'Connexion'}</h2>
-    <div id="msg" class="muted" style="text-align:center;margin-bottom:6px;"></div>
-    <form id="authForm">
-      <input type="email" id="email" placeholder="Adresse email" required />
-      <input type="password" id="password" placeholder="Mot de passe" required />
-      ${isRegister?'<input type="password" id="password2" placeholder="Confirmer le mot de passe" required />':''}
-      ${isRegister?'<input type="email" id="referral" placeholder="Email du parrain (optionnel)" />':''}
-      <button type="submit" class="primary">${isRegister?"S'inscrire":"Se connecter"}</button>
-    </form>
-    <div class="or"><div></div><div>${isRegister?'Déjà un compte ?':'Pas encore de compte ?'}</div><div></div></div>
-    <button id="toggleBtn" class="ghost">${isRegister?'Se connecter':'Créer un compte'}</button>
-  `;
-
-  // Attacher les événements après rendu
-  document.getElementById('toggleBtn').onclick = () => {
-    isRegister = !isRegister;
-    renderAuth();
-  };
-
-  document.getElementById('authForm').addEventListener('submit', handleAuth);
-}
-
-function handleAuth(e){
+loginForm.addEventListener('submit', async e => {
   e.preventDefault();
-  const email=document.getElementById('email').value.trim().toLowerCase();
-  const pw=document.getElementById('password').value.trim();
-  const data=loadData();
+  const email = document.getElementById('email').value.trim().toLowerCase();
+  const password = document.getElementById('password').value.trim();
 
-  if(isRegister){
-    const pw2=document.getElementById('password2').value.trim();
-    if(pw!==pw2){showMsg('Les mots de passe ne correspondent pas','error');return;}
-    if(data.users.find(u=>u.email===email)){showMsg('Un compte existe déjà pour cet email','error');return;}
+  if(!email || !password) return;
 
-    const referralEmail = document.getElementById('referral').value.trim().toLowerCase();
-    const newUser = {
-      email,
-      password: pw,
-      accountNumber: genAccountNumber(),
-      balance: 250,
-      history: referralEmail ? [{ type: 'Bonus Parrainage', montant: 250, date: new Date().toLocaleString(), parrain: referralEmail }] : [],
-      pendingDeposits: [],
-      pendingWithdraws: [],
-      invitedBy: referralEmail || null
-    };
-
-    if(referralEmail){
-      const parrain = data.users.find(u => u.email === referralEmail);
-      if(parrain){
-        parrain.balance += 500;
-        parrain.history.push({ type: 'Parrainage', montant: 500, date: new Date().toLocaleString(), invité: email });
-      }
-    }
-
-    data.users.push(newUser);
-    saveData(data);
-    sessionStorage.setItem('loggedEmail', email);
-    localStorage.setItem('persistedEmail', email);
-    window.location.href='dashboard.html';
-  }else{
-    const user=data.users.find(u=>u.email===email && u.password===pw);
-    if(!user){showMsg('Identifiants incorrects','error');return;}
-    sessionStorage.setItem('loggedEmail', email);
-    localStorage.setItem('persistedEmail', email);
-    window.location.href='dashboard.html';
+  const userRef = doc(db, 'users', email);
+  const snap = await getDoc(userRef);
+  if(!snap.exists()){
+    msgEl.textContent = "Utilisateur non trouvé";
+    msgEl.classList.add('error');
+    return;
   }
-}
 
-function showMsg(text,type){
-  const el=document.getElementById('msg');
-  el.textContent=text;
-  if(type==='error')el.classList.add('error'); else el.classList.remove('error');
-  setTimeout(()=>{el.textContent='';},4000);
-}
+  const data = snap.data();
+  if(data.password !== password){
+    msgEl.textContent = "Mot de passe incorrect";
+    msgEl.classList.add('error');
+    return;
+  }
 
-renderAuth();
+  // Connexion réussie : stocker email pour Dashboard
+  sessionStorage.setItem('loggedEmail', email);
+  window.location.href = 'dashboard.html';
+});
 </script>
 </body>
 </html>
