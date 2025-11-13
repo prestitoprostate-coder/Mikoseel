@@ -5,116 +5,74 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mikoseel - Dashboard</title>
 <style>
-:root {
-  --violet-dark: #0c001a;
-  --violet: #4c1d95;
-  --violet-mid: #6d28d9;
-  --violet-light: #a855f7;
-  --rose: #ec4899;
-  --text-light: #e9d5ff;
-  --card-bg: rgba(20,0,40,0.6);
-  --card-shadow: rgba(236,72,153,0.3);
-}
-
-body {
-  font-family:"Poppins",sans-serif;
-  margin:0; padding:0;
-  background: linear-gradient(120deg,var(--violet-dark),var(--violet),var(--violet-mid));
-  background-size: 300% 300%;
-  animation:moveBg 20s ease infinite;
-  color: var(--text-light);
-  overflow-x: hidden;
-}
-
-@keyframes moveBg{
-  0%{background-position:0% 50%;}
-  50%{background-position:100% 50%;}
-  100%{background-position:0% 50%;}
-}
-
-/* Styles généraux */
-.container{padding:0 20px 40px 20px; max-width:1200px; margin:auto;}
-.card{background: var(--card-bg); padding:20px; border-radius:16px; margin-bottom:20px; box-shadow:0 0 20px var(--card-shadow);}
-.card h2{margin-top:0;color:var(--violet-light);}
-input, button{padding:10px; border-radius:8px; border:none; margin-top:8px;}
-button{cursor:pointer; background-color: var(--violet-mid); color:#fff;}
-.error{color:#ff6b6b; margin-top:10px;}
+body{font-family:"Poppins",sans-serif;background:#0c001a;color:#fff;margin:0;padding:0;}
+header{background:linear-gradient(90deg,#6d28d9,#ec4899);padding:15px;text-align:center;font-size:24px;}
+.container{max-width:800px;margin:30px auto;padding:20px;background:rgba(20,0,40,0.8);border-radius:12px;}
+.card{background:rgba(255,255,255,0.05);padding:15px;border-radius:10px;margin-bottom:15px;}
+h2{margin-top:0;color:#a855f7;}
+ul{list-style:none;padding:0;}
+li{padding:5px 0;border-bottom:1px solid rgba(236,72,153,0.2);}
 </style>
 </head>
 <body>
 
+<header>Mikoseel Dashboard</header>
+
 <div class="container">
-
-  <!-- Connexion si aucun email -->
-  <div id="loginSection" class="card">
-    <h2>Connexion</h2>
-    <input type="email" id="loginEmail" placeholder="Entrez votre email">
-    <button id="loginBtn">Se connecter</button>
-    <div id="loginError" class="error"></div>
-  </div>
-
-  <!-- Dashboard -->
-  <div id="dashboard" class="card" style="display:none;">
+  <div class="card">
     <h2>Solde</h2>
     <p id="balance">0 FCFA</p>
+  </div>
+
+  <div class="card">
     <h2>Historique des transactions</h2>
     <ul id="history"><li>Aucune transaction pour le moment</li></ul>
   </div>
-
 </div>
 
 <!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-import { getFirestore, doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
 
+// Config Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyBKyAIcBC8tpWWaYgE_NeZEWJn8AEoyDLQ",
-  authDomain: "valide-28624.firebaseapp.com",
-  projectId: "valide-28624",
-  storageBucket: "valide-28624.appspot.com",
-  messagingSenderId: "483447990733",
-  appId: "1:483447990733:web:25c76bde60f9d78e76bc84"
+    apiKey: "AIzaSyBKyAIcBC8tpWWaYgE_NeZEWJn8AEoyDLQ",
+    authDomain: "valide-28624.firebaseapp.com",
+    projectId: "valide-28624",
+    storageBucket: "valide-28624.appspot.com",
+    messagingSenderId: "483447990733",
+    appId: "1:483447990733:web:25c76bde60f9d78e76bc84"
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
-const loginSection = document.getElementById('loginSection');
-const loginBtn = document.getElementById('loginBtn');
-const loginEmail = document.getElementById('loginEmail');
-const loginError = document.getElementById('loginError');
-
-const dashboard = document.getElementById('dashboard');
 const balanceEl = document.getElementById('balance');
 const historyEl = document.getElementById('history');
 
-loginBtn.addEventListener('click', async () => {
-  const email = loginEmail.value.trim();
-  loginError.textContent = '';
-  if(!email){ loginError.textContent = 'Veuillez entrer un email'; return; }
-
-  const userRef = doc(db, 'users', email);
-  const snap = await getDoc(userRef);
-
-  if(!snap.exists()){
-    loginError.textContent = "Utilisateur introuvable !";
-    return;
-  }
-
-  // Masquer la section login et afficher le dashboard
-  loginSection.style.display = 'none';
-  dashboard.style.display = 'block';
-
-  // Affichage du solde et historique en temps réel
-  onSnapshot(userRef, snapshot => {
-    const data = snapshot.data();
-    balanceEl.textContent = (data.balance || 0).toLocaleString() + " FCFA";
-    const hist = data.history || [];
-    historyEl.innerHTML = hist.length ? hist.map(h => {
-      return `<li>${h.date} - ${h.type} ${h.pack ? '- '+h.pack : ''} ${h.gain ? '+ '+h.gain.toLocaleString()+' FCFA' : ''}</li>`;
-    }).join('') : '<li>Aucune transaction pour le moment</li>';
-  });
+// Attendre la connexion de l'utilisateur
+onAuthStateChanged(auth, user => {
+    if(user){
+        const userEmail = user.email; // ID Firestore = email
+        const userRef = doc(db, 'users', userEmail);
+        onSnapshot(userRef, snap => {
+            if(snap.exists()){
+                const data = snap.data();
+                balanceEl.textContent = (data.balance || 0).toLocaleString() + " FCFA";
+                const hist = data.history || [];
+                historyEl.innerHTML = hist.length 
+                    ? hist.map(h => `<li>${h.date} - ${h.type} ${h.pack ? '- '+h.pack : ''} ${h.gain ? '+ '+h.gain.toLocaleString()+' FCFA' : ''}</li>`).join('')
+                    : '<li>Aucune transaction pour le moment</li>';
+            } else {
+                alert("Utilisateur introuvable !");
+            }
+        });
+    } else {
+        // redirige vers page login si non connecté
+        window.location.href = "login.html";
+    }
 });
 </script>
 
