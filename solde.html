@@ -3,85 +3,100 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Modifier Solde - Mikoseel</title>
+<title>Solde - Mikoseel</title>
 <style>
-body{font-family:"Poppins",sans-serif; background:#12002a; color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; margin:0;}
-.container{background:rgba(40,0,60,0.8); padding:30px; border-radius:12px; box-shadow:0 0 20px rgba(236,72,153,0.5);}
-input, button{padding:10px 15px; border:none; border-radius:8px; margin:5px 0; font-size:16px;}
-button{background:#ec4899; color:#fff; cursor:pointer;}
-button:hover{background:#d53f8c;}
-label{display:block; margin-top:10px;}
+body {
+  font-family: "Poppins", sans-serif;
+  margin:0; padding:20px;
+  background:#0c001a;
+  color:#fff;
+}
+h1{margin-bottom:20px;}
+input, button{
+  padding:10px; margin:5px 0;
+  border-radius:5px; border:none;
+}
+button{
+  background:#ec4899; color:#fff; cursor:pointer;
+}
+.error{color:#ff5555; margin:10px 0;}
+.success{color:#55ff55; margin:10px 0;}
 </style>
 </head>
 <body>
-<div class="container">
-  <h2>Modifier Solde Utilisateur</h2>
-  <p id="userEmail"></p>
-  <label>Montant:</label>
-  <input type="number" id="amount" placeholder="Ex: 5000" />
-  <label>Type:</label>
-  <select id="type">
-    <option value="add">Ajouter</option>
-    <option value="remove">Retirer</option>
-  </select>
-  <button id="submitBtn">Valider</button>
-  <p id="status"></p>
+
+<h1>Gestion du solde</h1>
+<p id="userInfo"></p>
+<div id="content" style="display:none;">
+  <p>Solde actuel: <span id="balance">0 FCFA</span></p>
+  <label>Montant à ajouter (FCFA):</label><br>
+  <input type="number" id="amount" min="1" placeholder="Ex: 5000">
+  <br>
+  <button id="addBtn">Ajouter au solde</button>
+  <p id="message"></p>
 </div>
+<p id="errorMsg" class="error"></p>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-import { getFirestore, doc, getDoc, updateDoc, arrayUnion, setDoc } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBKyAIcBC8tpWWaYgE_NeZEWJn8AEoyDLQ",
-  authDomain: "valide-28624.firebaseapp.com",
-  projectId: "valide-28624",
-  storageBucket: "valide-28624.appspot.com",
-  messagingSenderId: "483447990733",
-  appId: "1:483447990733:web:25c76bde60f9d78e76bc84"
+    apiKey: "AIzaSyBKyAIcBC8tpWWaYgE_NeZEWJn8AEoyDLQ",
+    authDomain: "valide-28624.firebaseapp.com",
+    projectId: "valide-28624",
+    storageBucket: "valide-28624.appspot.com",
+    messagingSenderId: "483447990733",
+    appId: "1:483447990733:web:25c76bde60f9d78e76bc84"
 };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const urlParams = new URLSearchParams(window.location.search);
 const userEmail = urlParams.get('email');
-document.getElementById('userEmail').textContent = "Utilisateur: " + (userEmail || "inconnu");
 
-document.getElementById('submitBtn').onclick = async () => {
-  const amount = parseFloat(document.getElementById('amount').value);
-  const type = document.getElementById('type').value;
-  const status = document.getElementById('status');
+if(!userEmail){
+  document.getElementById('errorMsg').textContent = "Erreur: Email utilisateur manquant !";
+}else{
+  const userRef = doc(db, "users", userEmail);
+  getDoc(userRef).then(snap=>{
+    if(!snap.exists()){
+      document.getElementById('errorMsg').textContent = "Erreur: Utilisateur introuvable !";
+    }else{
+      document.getElementById('content').style.display="block";
+      const data = snap.data();
+      const balanceEl = document.getElementById('balance');
+      balanceEl.textContent = (data.balance || 0).toLocaleString() + " FCFA";
+      document.getElementById('userInfo').textContent = "Utilisateur: " + userEmail;
 
-  if(!userEmail){ status.textContent = "Email utilisateur manquant!"; return; }
-  if(isNaN(amount) || amount <= 0){ status.textContent = "Montant invalide!"; return; }
-
-  const userRef = doc(db, 'users', userEmail);
-  const snap = await getDoc(userRef);
-
-  if(!snap.exists()){
-    await setDoc(userRef, { balance: 0, history: [] });
-  }
-
-  const data = (await getDoc(userRef)).data();
-  let newBalance = data.balance || 0;
-
-  if(type === "add") newBalance += amount;
-  else newBalance -= amount;
-
-  if(newBalance < 0){ status.textContent = "Solde insuffisant!"; return; }
-
-  await updateDoc(userRef, {
-    balance: newBalance,
-    history: arrayUnion({
-      date: new Date().toLocaleString(),
-      type: type === "add" ? "Dépôt" : "Retrait",
-      gain: amount
-    })
+      document.getElementById('addBtn').addEventListener('click', async ()=>{
+        const amt = parseInt(document.getElementById('amount').value);
+        const msg = document.getElementById('message');
+        msg.textContent="";
+        if(isNaN(amt) || amt <=0){
+          msg.textContent="Entrez un montant valide !";
+          msg.className="error";
+          return;
+        }
+        try{
+          await updateDoc(userRef, { balance: increment(amt) });
+          // mise à jour immédiate du solde affiché
+          const updatedSnap = await getDoc(userRef);
+          balanceEl.textContent = (updatedSnap.data().balance || 0).toLocaleString() + " FCFA";
+          msg.textContent = "Solde mis à jour avec succès !";
+          msg.className="success";
+          document.getElementById('amount').value="";
+        }catch(e){
+          msg.textContent = "Erreur lors de la mise à jour: "+e.message;
+          msg.className="error";
+        }
+      });
+    }
+  }).catch(err=>{
+    document.getElementById('errorMsg').textContent = "Erreur: "+err.message;
   });
-
-  status.textContent = `Solde mis à jour: ${newBalance.toLocaleString()} FCFA`;
-  document.getElementById('amount').value = "";
-};
+}
 </script>
+
 </body>
 </html>
