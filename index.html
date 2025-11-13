@@ -15,7 +15,7 @@
   --danger:#f87171;
   font-family:"Poppins",system-ui,sans-serif;
 }
-*{box-sizing:border-box;margin:0;padding:0;}
+*{box-sizing:border-box;margin:0;padding:0}
 body{
   background:linear-gradient(120deg,var(--violet-dark),var(--violet),var(--violet-mid));
   background-size:300% 300%;
@@ -31,34 +31,101 @@ body{
   50%{background-position:100% 50%;}
   100%{background-position:0% 50%;}
 }
-.wrap{display:flex;justify-content:center;align-items:flex-start;gap:30px;flex-wrap:wrap;padding:40px 20px;}
-.panel{background:rgba(20,0,40,0.6);border:1px solid rgba(168,85,247,0.3);border-radius:16px;padding:32px;box-shadow:0 0 25px rgba(168,85,247,0.3);backdrop-filter:blur(6px);width:420px;}
-h1{font-size:24px;color:var(--violet-light);margin:0;}
-form{margin-top:20px;display:flex;flex-direction:column;gap:14px;}
-input{padding:12px;border-radius:10px;border:1px solid rgba(168,85,247,0.4);background:rgba(76,29,149,0.4);color:var(--text-light);outline:none;transition:0.3s;}
-input:focus{border-color:var(--rose);background:rgba(236,72,153,0.2);}
-button.primary{background:linear-gradient(90deg,var(--violet-mid),var(--rose));color:#fff;border:none;padding:12px;border-radius:10px;font-weight:600;cursor:pointer;transition:0.3s;}
-button.primary:hover{transform:scale(1.03);}
-.error{color:var(--danger);font-weight:600;}
-.muted{font-size:13px;color:#c4b5fd;text-align:center;margin-top:6px;}
+header{
+  width:100%;
+  background:linear-gradient(90deg,var(--violet-mid),var(--rose));
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:12px 24px;
+  box-shadow:0 3px 15px rgba(0,0,0,0.2);
+  position:sticky;
+  top:0;
+  z-index:100;
+}
+header .logo{
+  font-size:28px;
+  font-weight:700;
+  color:#fff;
+}
+/* bulles */
+.bubbles{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  overflow:hidden;z-index:-1;pointer-events:none;
+}
+.bubble{
+  position:absolute;
+  bottom:-100px;
+  background:radial-gradient(circle at 30% 30%,rgba(236,72,153,0.6),rgba(124,58,237,0.1));
+  border-radius:50%;
+  animation:rise linear infinite;
+}
+@keyframes rise{
+  from{transform:translateY(0) scale(1);opacity:0.8;}
+  to{transform:translateY(-110vh) scale(1.5);opacity:0;}
+}
+.wrap{
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:60px 20px;
+}
+.panel{
+  background:rgba(20,0,40,0.6);
+  border-radius:16px;
+  padding:32px;
+  box-shadow:0 0 25px rgba(168,85,247,0.3);
+  width:400px;
+}
+.panel h1{color:var(--violet-light); text-align:center; margin-bottom:20px;}
+form{display:flex;flex-direction:column;gap:14px;}
+input{
+  padding:12px;border-radius:10px;
+  border:1px solid rgba(168,85,247,0.4);
+  background:rgba(76,29,149,0.4);
+  color:var(--text-light);
+  outline:none;transition:0.3s;
+}
+input:focus{
+  border-color:var(--rose);
+  background:rgba(236,72,153,0.2);
+}
+button.primary{
+  background:linear-gradient(90deg,var(--violet-mid),var(--rose));
+  color:#fff;border:none;padding:12px;border-radius:10px;
+  font-weight:600;cursor:pointer;transition:0.3s;
+}
+button.primary:hover{
+  transform:scale(1.03);
+  box-shadow:0 0 25px rgba(236,72,153,0.6);
+}
+.error{color:var(--danger);font-weight:600;text-align:center;}
 </style>
 </head>
 <body>
+
+<div class="bubbles" id="bubbles"></div>
+
+<header>
+  <div class="logo">Mikoseel</div>
+</header>
+
 <div class="wrap">
   <div class="panel">
     <h1>Connexion</h1>
     <form id="loginForm">
-      <input type="email" id="email" placeholder="Adresse email" required />
+      <input type="email" id="email" placeholder="Email" required />
       <input type="password" id="password" placeholder="Mot de passe" required />
       <button type="submit" class="primary">Se connecter</button>
     </form>
-    <div id="msg" class="muted"></div>
+    <div id="errorMsg" class="error"></div>
   </div>
 </div>
 
+<!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
 
 // Config Firebase
 const firebaseConfig = {
@@ -70,37 +137,42 @@ const firebaseConfig = {
     appId: "1:483447990733:web:25c76bde60f9d78e76bc84"
 };
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const auth = getAuth(app);
 
 const loginForm = document.getElementById('loginForm');
-const msgEl = document.getElementById('msg');
+const errorMsg = document.getElementById('errorMsg');
 
 loginForm.addEventListener('submit', async e => {
   e.preventDefault();
-  const email = document.getElementById('email').value.trim().toLowerCase();
+  const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value.trim();
-
-  if(!email || !password) return;
-
-  const userRef = doc(db, 'users', email);
-  const snap = await getDoc(userRef);
-  if(!snap.exists()){
-    msgEl.textContent = "Utilisateur non trouvé";
-    msgEl.classList.add('error');
-    return;
+  
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    // Connexion réussie, redirection vers le dashboard avec email
+    window.location.href = `dashboard.html?email=${encodeURIComponent(email)}`;
+  } catch(error) {
+    errorMsg.textContent = "Email ou mot de passe incorrect.";
+    console.error(error);
   }
-
-  const data = snap.data();
-  if(data.password !== password){
-    msgEl.textContent = "Mot de passe incorrect";
-    msgEl.classList.add('error');
-    return;
-  }
-
-  // Connexion réussie : stocker email pour Dashboard
-  sessionStorage.setItem('loggedEmail', email);
-  window.location.href = 'dashboard.html';
 });
+
+// Bulles
+function createBubbles(n=25){
+  const container=document.getElementById('bubbles');
+  for(let i=0;i<n;i++){
+    const b=document.createElement('div');
+    b.className='bubble';
+    const size=20+Math.random()*60;
+    b.style.width=b.style.height=size+'px';
+    b.style.left=Math.random()*100+'%';
+    b.style.animationDuration=(8+Math.random()*10)+'s';
+    b.style.animationDelay=(Math.random()*5)+'s';
+    container.appendChild(b);
+  }
+}
+createBubbles();
 </script>
+
 </body>
 </html>
