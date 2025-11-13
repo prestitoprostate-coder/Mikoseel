@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Mikoseel - Tableau de bord</title>
+<title>Mikoseel — Tableau de bord</title>
 
 <style>
 :root{
@@ -19,9 +19,10 @@ body{
   font-family:"Poppins",sans-serif;
   background:linear-gradient(120deg,var(--violet-dark),var(--violet),var(--violet-mid));
   background-size:300% 300%;
-  animation:moveBg 20s ease infinite;
+  animation:moveBg 18s ease infinite;
   color:var(--text-light);
   overflow-x:hidden;
+  min-height:100vh;
 }
 @keyframes moveBg{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 
@@ -50,98 +51,83 @@ header h1{font-size:20px;margin:0}
 }
 .menu-dropdown a:hover,.menu-dropdown button:hover{background:rgba(236,72,153,0.18)}
 
-.bubbles{position:fixed;inset:0;overflow:hidden;z-index:-1}
-.bubble{
-  position:absolute;
-  border-radius:50%;
-  bottom:-120px;
-  background:radial-gradient(circle at 30% 30%,rgba(236,72,153,0.6),rgba(124,58,237,0.1));
-  animation:rise linear infinite;
-}
-@keyframes rise{from{transform:translateY(0);opacity:0.9}to{transform:translateY(-120vh);opacity:0}}
-
-.container{
-  padding:20px;
-  max-width:1400px;
-  margin:auto;
-}
-.section{
+.tabs{
   display:flex;
-  overflow-x:auto;
-  scroll-behavior:smooth;
-  gap:20px;
-  padding-bottom:20px;
+  justify-content:center;
+  gap:10px;
+  margin-top:15px;
 }
+.tab-btn{
+  background:rgba(255,255,255,0.08);
+  border:none;
+  padding:10px 16px;
+  border-radius:8px;
+  color:#fff;
+  font-weight:600;
+  cursor:pointer;
+  transition:0.3s;
+}
+.tab-btn.active{
+  background:linear-gradient(90deg,var(--violet-mid),var(--rose));
+  box-shadow:0 0 15px rgba(236,72,153,0.4);
+}
+.tab-btn:hover{transform:scale(1.03)}
+
+.section{display:none;padding:20px;max-width:1100px;margin:auto;}
+.section.active{display:block;}
+
 .card{
-  flex:0 0 400px;
   background:rgba(255,255,255,0.05);
-  border-radius:14px;
-  padding:18px;
-  box-shadow:0 8px 30px rgba(0,0,0,0.4);
-  transition:transform .3s ease, box-shadow .3s ease;
+  border-radius:12px;
+  padding:16px;
+  box-shadow:0 4px 15px rgba(0,0,0,0.3);
+  margin-bottom:16px;
 }
-.card:hover{transform:translateY(-4px);box-shadow:0 8px 40px rgba(0,0,0,0.6)}
-.card h2{color:var(--violet-light);margin-bottom:10px}
-#balance{font-size:32px;font-weight:700;color:#fff}
-#userEmailDisplay{color:#cbb8ff;margin-top:6px}
+.card h2{color:var(--violet-light);margin-bottom:8px}
+#balance{font-size:28px;font-weight:700}
+#userEmailDisplay{color:#cbb8ff;margin-top:4px;font-size:14px}
 
 .machine-card{
-  padding:14px;
-  border-radius:10px;
-  background:linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02));
-  cursor:pointer;
-  transition:all .3s ease;
+  background:linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03));
+  padding:12px;border-radius:10px;cursor:pointer;transition:.3s;
 }
-.machine-card:hover{transform:scale(1.05);box-shadow:0 0 20px rgba(236,72,153,0.3)}
+.machine-card:hover{transform:scale(1.04);box-shadow:0 0 18px rgba(236,72,153,0.3)}
 
 .info-block{
-  margin-top:20px;
+  margin-top:14px;
   background:rgba(236,72,153,0.08);
-  padding:18px;
+  padding:16px;
   border-radius:10px;
   border-left:4px solid var(--rose);
 }
 .info-block h3{margin-bottom:6px;color:var(--rose)}
-.info-block p{color:#e6d6ff;line-height:1.6}
+.info-block p{color:#e6d6ff;line-height:1.6;font-size:14px}
 
-.footer{padding:20px;text-align:center;color:#d8b4fe}
+.footer{padding:20px;text-align:center;color:#d8b4fe;font-size:13px}
 
-/* --- Modal conditions --- */
 #modalConditions{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.85);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  z-index:1000;
-  backdrop-filter:blur(8px);
+  position:fixed;inset:0;background:rgba(0,0,0,0.85);
+  display:flex;justify-content:center;align-items:center;
+  z-index:1000;backdrop-filter:blur(8px);
 }
 .modal-content{
   background:linear-gradient(180deg,#1f0035,#4c1d95);
-  padding:24px;
-  border-radius:12px;
-  width:90%;
-  max-width:700px;
-  color:#f4eaff;
-  position:relative;
+  padding:24px;border-radius:12px;
+  width:90%;max-width:700px;color:#f4eaff;position:relative;
   box-shadow:0 8px 40px rgba(0,0,0,0.6);
-  max-height:80vh;
-  overflow:auto;
+  max-height:80vh;overflow:auto;
 }
 .modal-content h2{color:var(--rose);margin-bottom:12px}
-.modal-content p{margin-bottom:10px;line-height:1.6}
 .close-modal{
   position:absolute;top:12px;right:14px;
   background:none;border:none;color:#fff;font-size:22px;cursor:pointer;
 }
-@media(max-width:800px){.card{flex:0 0 85%}}
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Mikoseel — Dashboard</h1>
+  <h1>Mikoseel — Tableau de bord</h1>
   <div class="menu-container">
     <button id="menuBtn" class="menu-btn">☰</button>
     <div id="menuDropdown" class="menu-dropdown">
@@ -151,55 +137,69 @@ header h1{font-size:20px;margin:0}
   </div>
 </header>
 
-<div class="bubbles" id="bubbles"></div>
-
-<div class="container">
-  <section class="section" id="horizontal-section">
-    <div class="card">
-      <h2>Solde</h2>
-      <div id="balance">Chargement...</div>
-      <div id="userEmailDisplay"></div>
-    </div>
-
-    <div class="card">
-      <h2>Historique</h2>
-      <ul id="history" style="list-style:none;max-height:200px;overflow:auto;padding:0">
-        <li>Aucune transaction pour le moment</li>
-      </ul>
-    </div>
-
-    <div class="card">
-      <h2>Machines disponibles</h2>
-      <div id="machineCards" style="display:grid;gap:10px"></div>
-    </div>
-  </section>
-
-  <div class="info-block">
-    <h3>Comment fonctionne Mikoseel ?</h3>
-    <p>
-      Mikoseel est une plateforme d’investissement automatisée, pensée pour rendre la croissance financière accessible à tous. Chaque utilisateur peut choisir un pack adapté à ses moyens : Bronze, Silver, Gold ou Diamond.
-    </p>
-    <p>
-      Une fois validé, le pack génère automatiquement des gains toutes les 12 heures, en fonction du montant investi. Ces gains sont cumulés dans votre solde et peuvent être retirés à tout moment depuis la section “Retrait”.
-    </p>
-    <p>
-      L’objectif de Mikoseel est d’offrir une solution d’investissement fiable, transparente et sécurisée, sans nécessiter de connaissances techniques. Tout le processus est géré via le système automatisé Firebase, garantissant une traçabilité et une intégrité maximale.
-    </p>
-  </div>
-
-  <div class="info-block">
-    <h3>Pourquoi Mikoseel est unique ?</h3>
-    <p>
-      Contrairement à de simples plateformes de dépôt, Mikoseel récompense la fidélité et encourage la croissance par un système de parrainage intelligent. Les utilisateurs peuvent mentionner le mail de leur parrain lors de l’inscription, permettant ainsi un partage de bénéfices entre utilisateurs actifs.
-    </p>
-    <p>
-      De plus, Mikoseel s’appuie sur un environnement sécurisé et des serveurs Firebase pour garantir la sécurité totale des données, sans jamais stocker de mot de passe en clair.
-    </p>
-    <p>
-      Notre vision est de bâtir une communauté d’utilisateurs gagnant du temps et de la stabilité financière à travers une expérience fluide et motivante.
-    </p>
-  </div>
+<div class="tabs">
+  <button class="tab-btn active" data-tab="home">🏠 Accueil</button>
+  <button class="tab-btn" data-tab="packs">💰 Packs</button>
+  <button class="tab-btn" data-tab="retrait">💸 Retraits</button>
 </div>
+
+<section id="home" class="section active">
+  <div class="card">
+    <h2>Solde</h2>
+    <div id="balance">Chargement...</div>
+    <div id="userEmailDisplay"></div>
+  </div>
+
+  <div class="card">
+    <h2>Historique</h2>
+    <ul id="history" style="list-style:none;max-height:200px;overflow:auto;padding:0">
+      <li>Aucune transaction pour le moment</li>
+    </ul>
+  </div>
+</section>
+
+<section id="packs" class="section">
+  <div class="card">
+    <h2>Choisissez un pack</h2>
+    <div id="machineCards" style="display:grid;gap:10px"></div>
+  </div>
+
+  <div class="info-block">
+    <h3>Comment fonctionnent les Packs ?</h3>
+    <p>
+      Chaque pack représente un niveau d’investissement avec un rendement différent.  
+      Plus le pack est élevé, plus le gain automatique est important.  
+      Les gains s’ajoutent à votre solde toutes les 12 heures après validation.
+    </p>
+    <p>
+      Vous pouvez augmenter de pack à tout moment, mais pas rétrograder.  
+      Les mises à jour sont effectuées automatiquement sur votre compte Firebase.
+    </p>
+  </div>
+</section>
+
+<section id="retrait" class="section">
+  <div class="card">
+    <h2>Effectuer un retrait</h2>
+    <p>Indiquez le montant à retirer et confirmez l’opération.</p>
+    <form id="withdrawForm">
+      <input type="number" id="withdrawAmount" placeholder="Montant à retirer (FCFA)" min="1000" required style="width:100%;padding:10px;border-radius:8px;border:none;margin-top:8px;margin-bottom:10px;">
+      <button type="submit" style="background:linear-gradient(90deg,var(--violet-mid),var(--rose));color:#fff;border:none;padding:10px 16px;border-radius:8px;font-weight:600;cursor:pointer;">Confirmer le retrait</button>
+    </form>
+  </div>
+
+  <div class="info-block">
+    <h3>Informations sur les retraits</h3>
+    <p>
+      Les retraits sont traités automatiquement et sont crédités sur votre compte mobile ou bancaire enregistré.  
+      Le délai moyen est de 5 à 30 minutes selon le volume des transactions en cours.
+    </p>
+    <p>
+      Assurez-vous que votre solde est suffisant avant d’effectuer un retrait.  
+      Les montants inférieurs à 1 000 FCFA ne peuvent pas être traités.
+    </p>
+  </div>
+</section>
 
 <div class="footer">
   © 2025 Mikoseel — Tous droits réservés. En continuant, vous acceptez nos conditions d’utilisation.
@@ -210,24 +210,16 @@ header h1{font-size:20px;margin:0}
   <div class="modal-content">
     <button class="close-modal" id="closeModal">✕</button>
     <h2>Conditions d’utilisation</h2>
-    <p>
-      En accédant à Mikoseel, vous acceptez nos conditions générales d’utilisation. Vous reconnaissez que toute transaction financière réalisée sur la plateforme est enregistrée et contrôlée par nos systèmes automatisés.
-    </p>
-    <p>
-      Les utilisateurs doivent utiliser des informations authentiques. Toute tentative de fraude, d’utilisation abusive ou de duplication de comptes entraînera la suspension immédiate du compte.
-    </p>
-    <p>
-      Mikoseel se réserve le droit de modifier les taux de gains, les offres et les conditions sans préavis, afin d’assurer la durabilité et la performance du système.
-    </p>
-    <p>
-      En poursuivant votre utilisation, vous confirmez avoir lu, compris et accepté l’intégralité de ces conditions.
-    </p>
+    <p>En utilisant Mikoseel, vous acceptez nos conditions générales et reconnaissez que toute transaction effectuée est enregistrée sur nos serveurs sécurisés Firebase.</p>
+    <p>Vous devez utiliser des informations véridiques. Toute tentative de fraude entraînera la suspension immédiate du compte.</p>
+    <p>Les rendements automatiques sont soumis à nos algorithmes internes et peuvent évoluer selon les conditions du marché.</p>
+    <p>En poursuivant, vous confirmez avoir lu et accepté ces conditions.</p>
   </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-import { getFirestore, doc, onSnapshot, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -245,29 +237,19 @@ const auth = getAuth(app);
 const balanceEl = document.getElementById('balance');
 const historyEl = document.getElementById('history');
 const userEmailDisplay = document.getElementById('userEmailDisplay');
-const menuBtn = document.getElementById('menuBtn');
-const menuDropdown = document.getElementById('menuDropdown');
-const logoutBtn = document.getElementById('logoutBtn');
-const modal = document.getElementById('modalConditions');
-const closeModal = document.getElementById('closeModal');
 const machineCards = document.getElementById('machineCards');
+const withdrawForm = document.getElementById('withdrawForm');
 
-/* Bubbles */
-for(let i=0;i<25;i++){
-  const b=document.createElement('div');
-  b.className='bubble';
-  const size=10+Math.random()*60;
-  b.style.width=b.style.height=size+'px';
-  b.style.left=Math.random()*100+'%';
-  b.style.animationDuration=(6+Math.random()*14)+'s';
-  b.style.animationDelay=(Math.random()*5)+'s';
-  document.getElementById('bubbles').appendChild(b);
-}
+const tabs = document.querySelectorAll('.tab-btn');
+tabs.forEach(tab=>{
+  tab.onclick=()=>{
+    tabs.forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelectorAll('.section').forEach(sec=>sec.classList.remove('active'));
+    document.getElementById(tab.dataset.tab).classList.add('active');
+  }
+});
 
-menuBtn.onclick = ()=> menuDropdown.style.display = menuDropdown.style.display==='block'?'none':'block';
-document.addEventListener('click',e=>{if(!menuBtn.contains(e.target)&&!menuDropdown.contains(e.target))menuDropdown.style.display='none'});
-
-/* Machines */
 const machines=[
   {name:"Pack Bronze",min:2000,max:5000,gain:250},
   {name:"Pack Silver",min:5000,max:10000,gain:900},
@@ -287,30 +269,51 @@ machines.forEach(m=>{
   machineCards.appendChild(el);
 });
 
-/* Firestore */
 let currentEmail=null;
 onAuthStateChanged(auth, async user=>{
   currentEmail=user?.email||sessionStorage.getItem('loggedEmail');
   if(!currentEmail) return location.href='login.html';
   userEmailDisplay.textContent=currentEmail;
-
   const userRef=doc(db,'users',currentEmail);
   const snap=await getDoc(userRef);
   if(!snap.exists()) await setDoc(userRef,{balance:0,history:[]});
   onSnapshot(userRef,docSnap=>{
     const data=docSnap.data();
-    balanceEl.textContent=(data.balance||0).toLocaleString()+' FCFA';
+    balanceEl.textContent=(data.balance||0).toLocaleString()+" FCFA";
     const hist=data.history||[];
     historyEl.innerHTML=hist.length?hist.slice().reverse().map(h=>`<li>${h.date} — ${h.type||'Opération'} ${h.gain?'+ '+h.gain+' FCFA':''}</li>`).join(''):'<li>Aucune transaction</li>';
   });
 });
 
-/* Logout */
-logoutBtn.onclick=async()=>{await signOut(auth);sessionStorage.removeItem('loggedEmail');location.href='login.html'};
+withdrawForm.addEventListener('submit',async e=>{
+  e.preventDefault();
+  const amount=parseInt(document.getElementById('withdrawAmount').value);
+  if(isNaN(amount)||amount<1000)return alert("Montant invalide (min. 1000 FCFA)");
+  const userRef=doc(db,'users',currentEmail);
+  const snap=await getDoc(userRef);
+  const bal=snap.data().balance||0;
+  if(amount>bal)return alert("Solde insuffisant");
+  await updateDoc(userRef,{
+    balance:bal-amount,
+    history:arrayUnion({type:'Retrait',gain:-amount,date:new Date().toLocaleString()})
+  });
+  alert("Retrait effectué avec succès !");
+  document.getElementById('withdrawAmount').value="";
+});
 
-/* Modal conditions */
-window.onload=()=>{modal.style.display='flex';};
-closeModal.onclick=()=>{modal.style.display='none';};
+document.getElementById('logoutBtn').onclick=async()=>{
+  await signOut(auth);
+  sessionStorage.removeItem('loggedEmail');
+  location.href='login.html';
+};
+
+document.getElementById('menuBtn').onclick=()=>{
+  const menu=document.getElementById('menuDropdown');
+  menu.style.display=menu.style.display==='block'?'none':'block';
+};
+
+document.getElementById('closeModal').onclick=()=>document.getElementById('modalConditions').style.display='none';
+window.onload=()=>document.getElementById('modalConditions').style.display='flex';
 </script>
 </body>
 </html>
