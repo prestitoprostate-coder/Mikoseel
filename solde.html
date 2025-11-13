@@ -35,7 +35,6 @@ button{background:linear-gradient(90deg,#6d28d9,#ec4899);font-weight:bold;cursor
 
 <h1>💰 Admin — Valider le solde</h1>
 
-<!-- Sélection de l’utilisateur -->
 <form id="userForm">
   <div class="field">
     <label for="user_email">Email utilisateur</label>
@@ -44,7 +43,6 @@ button{background:linear-gradient(90deg,#6d28d9,#ec4899);font-weight:bold;cursor
   <button type="submit">Charger le compte</button>
 </form>
 
-<!-- Solde et validation pack -->
 <div class="balance-box" id="balanceBox" style="display:none;">
   <h2>Solde actuel :</h2>
   <div class="balance" id="balanceDisplay">0 FCFA</div>
@@ -60,7 +58,7 @@ button{background:linear-gradient(90deg,#6d28d9,#ec4899);font-weight:bold;cursor
     </select>
   </div>
   <button id="validatePack">Valider le pack</button>
-  <p class="muted">Le gain sera ajouté automatiquement toutes les 12h. Copiez le message de transaction pour votre référence.</p>
+  <p class="muted">Le gain sera ajouté automatiquement toutes les 12h.</p>
 </div>
 
 <script type="module">
@@ -97,7 +95,7 @@ const packs = {
   "Diamond": 12000
 };
 
-// Charger le compte utilisateur
+// Charger le compte existant uniquement
 userForm.addEventListener('submit', async e=>{
   e.preventDefault();
   currentUserEmail = document.getElementById('user_email').value.trim();
@@ -105,11 +103,8 @@ userForm.addEventListener('submit', async e=>{
 
   const userRef = doc(db,'users',currentUserEmail);
   const snap = await getDoc(userRef);
-  
   if(!snap.exists()){
-    alert("Erreur : cet utilisateur n'existe pas dans Firestore !");
-    balanceBox.style.display = 'none';
-    return;
+    return alert("Cet utilisateur n’existe pas !");
   }
 
   balance = snap.data().balance || 0;
@@ -120,8 +115,6 @@ userForm.addEventListener('submit', async e=>{
 // Valider le pack et lancer gain automatique
 validatePackBtn.addEventListener('click', async e=>{
   e.preventDefault();
-  if(!currentUserEmail) return alert("Vous devez d'abord sélectionner un utilisateur.");
-  
   const pack = packSelect.value;
   if(!pack) return alert("Choisissez un pack");
 
@@ -129,7 +122,7 @@ validatePackBtn.addEventListener('click', async e=>{
   const userRef = doc(db,'users',currentUserEmail);
 
   // Ajouter le pack et montant initial au solde
-  balance += gainPer12h;
+  balance += gainPer12h; 
   balanceDisplay.textContent = balance.toLocaleString() + " FCFA";
 
   await updateDoc(userRef,{
@@ -140,10 +133,8 @@ validatePackBtn.addEventListener('click', async e=>{
 
   alert(`Pack ${pack} validé ! Gains automatiques programmés.`);
 
-  // Supprimer ancien intervalle
   if(intervalId) clearInterval(intervalId);
 
-  // Incrément automatique toutes les 12h (43200000 ms)
   intervalId = setInterval(async ()=>{
     balance += gainPer12h;
     balanceDisplay.textContent = balance.toLocaleString() + " FCFA";
@@ -151,9 +142,7 @@ validatePackBtn.addEventListener('click', async e=>{
       balance: balance,
       history: arrayUnion({type:'Gain automatique',pack:pack,gain:gainPer12h,date:new Date().toLocaleString()})
     });
-  }, 43200000);
-
-  // Pour test rapide, tu peux remplacer 43200000 par 12000 (12 sec)
+  }, 43200000); // 12h
 });
 </script>
 </body>
