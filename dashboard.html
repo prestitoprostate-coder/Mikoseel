@@ -3,40 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mikoseel - Dashboard</title>
+<title>Dashboard - Solde en temps réel</title>
 <style>
-body{font-family:"Poppins",sans-serif;background:#0c001a;color:#fff;margin:0;padding:0;}
-header{background:linear-gradient(90deg,#6d28d9,#ec4899);padding:15px;text-align:center;font-size:24px;}
-.container{max-width:800px;margin:30px auto;padding:20px;background:rgba(20,0,40,0.8);border-radius:12px;}
-.card{background:rgba(255,255,255,0.05);padding:15px;border-radius:10px;margin-bottom:15px;}
-h2{margin-top:0;color:#a855f7;}
-ul{list-style:none;padding:0;}
-li{padding:5px 0;border-bottom:1px solid rgba(236,72,153,0.2);}
+body{font-family:sans-serif;background:#0c001a;color:#fff;padding:20px;}
+h1{text-align:center;}
+.card{background:rgba(20,0,40,0.8);padding:20px;border-radius:10px;margin:20px auto;max-width:400px;text-align:center;}
+.balance{font-size:32px;color:#a855f7;margin-top:10px;}
 </style>
 </head>
 <body>
 
-<header>Mikoseel Dashboard</header>
+<h1>Dashboard</h1>
 
-<div class="container">
-  <div class="card">
-    <h2>Solde</h2>
-    <p id="balance">0 FCFA</p>
-  </div>
-
-  <div class="card">
-    <h2>Historique des transactions</h2>
-    <ul id="history"><li>Aucune transaction pour le moment</li></ul>
-  </div>
+<div class="card">
+  <h2>Solde actuel</h2>
+  <div class="balance" id="balance">0 FCFA</div>
 </div>
 
 <!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
 import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
 
-// Config Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyBKyAIcBC8tpWWaYgE_NeZEWJn8AEoyDLQ",
     authDomain: "valide-28624.firebaseapp.com",
@@ -47,31 +35,19 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const auth = getAuth(app);
 
 const balanceEl = document.getElementById('balance');
-const historyEl = document.getElementById('history');
+const userEmail = "smong2025@outlook.fr"; // Remplacer par l'utilisateur que tu veux suivre
 
-// Attendre la connexion de l'utilisateur
-onAuthStateChanged(auth, user => {
-    if(user){
-        const userEmail = user.email; // ID Firestore = email
-        const userRef = doc(db, 'users', userEmail);
-        onSnapshot(userRef, snap => {
-            if(snap.exists()){
-                const data = snap.data();
-                balanceEl.textContent = (data.balance || 0).toLocaleString() + " FCFA";
-                const hist = data.history || [];
-                historyEl.innerHTML = hist.length 
-                    ? hist.map(h => `<li>${h.date} - ${h.type} ${h.pack ? '- '+h.pack : ''} ${h.gain ? '+ '+h.gain.toLocaleString()+' FCFA' : ''}</li>`).join('')
-                    : '<li>Aucune transaction pour le moment</li>';
-            } else {
-                alert("Utilisateur introuvable !");
-            }
-        });
+const userRef = doc(db, 'users', userEmail);
+
+// Écoute en temps réel pour le solde
+onSnapshot(userRef, snap => {
+    if(snap.exists()){
+        const data = snap.data();
+        balanceEl.textContent = (data.balance || 0).toLocaleString() + " FCFA";
     } else {
-        // redirige vers page login si non connecté
-        window.location.href = "login.html";
+        balanceEl.textContent = "Utilisateur non trouvé";
     }
 });
 </script>
