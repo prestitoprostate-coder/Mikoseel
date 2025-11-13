@@ -288,7 +288,7 @@ document.addEventListener('click', e=>{ if(!menuBtn.contains(e.target) && !menuD
 logoutBtn.onclick = async ()=>{
   try{ await signOut(auth); }catch(e){}
   sessionStorage.removeItem('loggedEmail');
-  location.href='login.html';
+  location.href='index.html';
 };
 
 /* ---------- Machines (packs) ---------- */
