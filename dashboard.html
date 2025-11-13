@@ -31,165 +31,55 @@ body {
   100%{background-position:0% 50%;}
 }
 
-/* Bulles animées */
-.bubbles{
-  position:fixed; top:0; left:0; width:100%; height:100%;
-  overflow:hidden; z-index:-1; pointer-events:none;
-}
-.bubble{
-  position:absolute;
-  bottom:-100px;
-  background: radial-gradient(circle at 30% 30%, rgba(236,72,153,0.6), rgba(124,58,237,0.1));
-  border-radius:50%;
-  animation:rise linear infinite;
-}
-@keyframes rise{
-  from{transform:translateY(0) scale(1); opacity:0.8;}
-  to{transform:translateY(-120vh) scale(1.5); opacity:0;}
-}
+/* Bulles */
+.bubbles{position:fixed; top:0; left:0; width:100%; height:100%; overflow:hidden; z-index:-1; pointer-events:none;}
+.bubble{position:absolute; bottom:-100px; border-radius:50%; animation:rise linear infinite;}
+@keyframes rise{from{transform:translateY(0) scale(1); opacity:0.8;} to{transform:translateY(-120vh) scale(1.5); opacity:0;}}
 
 /* Header */
 header{
   background: linear-gradient(90deg,var(--violet-mid),var(--rose));
-  padding:12px 24px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  position:sticky;
-  top:0;
-  z-index:10;
+  padding:12px 24px; display:flex; justify-content:space-between; align-items:center;
+  position:sticky; top:0; z-index:10;
 }
 header h1{margin:0;font-size:22px;}
 .menu-container{position:relative;}
-.menu-btn{
-  background:none;
-  border:none;
-  color:#fff;
-  font-size:24px;
-  cursor:pointer;
-}
-.menu-dropdown{
-  display:none;
-  position:absolute;
-  right:0;
-  top:40px;
-  background:rgba(20,0,40,0.95);
-  border-radius:8px;
-  min-width:180px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.5);
-  flex-direction:column;
-}
-.menu-dropdown a, .menu-dropdown button{
-  display:block;
-  width:100%;
-  text-decoration:none;
-  color:#fff;
-  background:none;
-  border:none;
-  padding:12px;
-  text-align:left;
-  cursor:pointer;
-}
-.menu-dropdown a:hover, .menu-dropdown button:hover{
-  background:rgba(236,72,153,0.3);
-}
+.menu-btn{background:none;border:none;color:#fff;font-size:24px;cursor:pointer;}
+.menu-dropdown{display:none;position:absolute;right:0;top:40px;background:rgba(20,0,40,0.95);border-radius:8px;min-width:180px;box-shadow:0 4px 12px rgba(0,0,0,0.5);flex-direction:column;}
+.menu-dropdown a, .menu-dropdown button{display:block;width:100%;text-decoration:none;color:#fff;background:none;border:none;padding:12px;text-align:left;cursor:pointer;}
+.menu-dropdown a:hover, .menu-dropdown button:hover{background:rgba(236,72,153,0.3);}
 
 /* Onglets */
-.tabs{
-  display:flex;
-  gap:15px;
-  margin:20px;
-}
-.tab-btn{
-  padding:10px 20px;
-  border:none;
-  border-radius:10px;
-  background: rgba(20,0,40,0.6);
-  color:#fff;
-  cursor:pointer;
-  transition:0.3s;
-}
+.tabs{display:flex; gap:15px; margin:20px;}
+.tab-btn{padding:10px 20px; border:none; border-radius:10px; background: rgba(20,0,40,0.6); color:#fff; cursor:pointer; transition:0.3s;}
 .tab-btn.active,.tab-btn:hover{background: rgba(236,72,153,0.6);}
 
 /* Container & Cards */
-.container{
-  padding:0 20px 40px 20px;
-  max-width:1200px;
-  margin:auto;
-}
-.card{
-  background: var(--card-bg);
-  padding:20px;
-  border-radius:16px;
-  margin-bottom:20px;
-  box-shadow:0 0 20px var(--card-shadow);
-  transition:0.3s;
-}
-.card:hover{
-  transform: translateY(-3px);
-  box-shadow:0 0 30px rgba(236,72,153,0.5);
-}
+.container{padding:0 20px 40px 20px; max-width:1200px; margin:auto;}
+.card{background: var(--card-bg); padding:20px; border-radius:16px; margin-bottom:20px; box-shadow:0 0 20px var(--card-shadow); transition:0.3s;}
+.card:hover{transform: translateY(-3px); box-shadow:0 0 30px rgba(236,72,153,0.5);}
 .card h2{margin-top:0;color:var(--violet-light);}
 ul{list-style:none; padding:0; max-height:200px; overflow-y:auto;}
 li{padding:6px 0; border-bottom:1px solid rgba(168,85,247,0.2);}
 
 /* Machines */
 .machine-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:20px;}
-.machine-card{
-  padding:15px;
-  border-radius:14px;
-  text-align:center;
-  box-shadow:0 6px 15px rgba(0,0,0,0.5);
-  transition:0.3s;
-  cursor:pointer;
-}
-.machine-card:hover{
-  transform:translateY(-5px);
-  box-shadow:0 12px 25px rgba(236,72,153,0.5);
-}
+.machine-card{padding:15px; border-radius:14px; text-align:center; box-shadow:0 6px 15px rgba(0,0,0,0.5); transition:0.3s; cursor:pointer;}
+.machine-card:hover{transform:translateY(-5px); box-shadow:0 12px 25px rgba(236,72,153,0.5);}
 
 /* Section & ticker */
 .section{display:none;}
 .section.active{display:block;}
-.public-ticker{
-  height:150px;
-  overflow:hidden;
-  position:relative;
-  background:rgba(0,0,0,0.2);
-  border-radius:12px;
-  padding:10px;
-  color:#fff;
-  font-size:14px;
-  line-height:1.5em;
-}
-.public-ticker-content{
-  position:absolute; top:0; width:100%;
-}
+.public-ticker{height:150px; overflow:hidden; position:relative; background:rgba(0,0,0,0.2); border-radius:12px; padding:10px; color:#fff; font-size:14px; line-height:1.5em;}
+.public-ticker-content{position:absolute; top:0; width:100%;}
 
 /* Info cards */
-.info-cards{
-  display:flex;
-  gap:15px;
-  flex-wrap:wrap;
-  margin-top:20px;
-}
-.info-card{
-  flex:1;
-  min-width:150px;
-  background: rgba(236,72,153,0.1);
-  border-radius:12px;
-  padding:15px;
-  text-align:center;
-  border:1px solid rgba(236,72,153,0.3);
-  box-shadow:0 0 15px rgba(236,72,153,0.2);
-  transition:0.3s;
-}
-.info-card:hover{
-  transform: translateY(-3px);
-  box-shadow:0 0 25px rgba(236,72,153,0.4);
-}
+.info-cards{display:flex; gap:15px; flex-wrap:wrap; margin-top:20px;}
+.info-card{flex:1; min-width:150px; background: rgba(236,72,153,0.1); border-radius:12px; padding:15px; text-align:center; border:1px solid rgba(236,72,153,0.3); box-shadow:0 0 15px rgba(236,72,153,0.2); transition:0.3s;}
+.info-card:hover{transform: translateY(-3px); box-shadow:0 0 25px rgba(236,72,153,0.4);}
 .info-card h3{margin:0 0 8px 0;color:#ec4899;}
 .info-card p{margin:0;color:#fff;}
+.error-msg{color:#ff5555; font-weight:bold; margin-top:10px;}
 </style>
 </head>
 <body>
@@ -219,6 +109,7 @@ li{padding:6px 0; border-bottom:1px solid rgba(168,85,247,0.2);}
     <div class="card">
       <h2>Solde</h2>
       <p id="balance">0 FCFA</p>
+      <p id="errorMsg" class="error-msg" style="display:none;"></p>
     </div>
 
     <div class="card">
@@ -234,18 +125,9 @@ li{padding:6px 0; border-bottom:1px solid rgba(168,85,247,0.2);}
     </div>
 
     <div class="info-cards">
-      <div class="info-card">
-        <h3>Clé 1</h3>
-        <p>Permet d’accéder à certaines fonctionnalités avancées et aux informations détaillées sur les transactions.</p>
-      </div>
-      <div class="info-card">
-        <h3>Clé 2</h3>
-        <p>Améliore la sécurité et active le suivi en temps réel ainsi que la gestion des historiques détaillés.</p>
-      </div>
-      <div class="info-card">
-        <h3>Clé 3</h3>
-        <p>Donne accès aux rapports et visualisations pour suivre l’activité globale et les performances.</p>
-      </div>
+      <div class="info-card"><h3>Clé 1</h3><p>Permet d’accéder à certaines fonctionnalités avancées et aux informations détaillées sur les transactions.</p></div>
+      <div class="info-card"><h3>Clé 2</h3><p>Améliore la sécurité et active le suivi en temps réel ainsi que la gestion des historiques détaillés.</p></div>
+      <div class="info-card"><h3>Clé 3</h3><p>Donne accès aux rapports et visualisations pour suivre l’activité globale et les performances.</p></div>
     </div>
   </div>
 
@@ -255,9 +137,10 @@ li{padding:6px 0; border-bottom:1px solid rgba(168,85,247,0.2);}
   </div>
 </div>
 
+<!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+import { getFirestore, doc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBKyAIcBC8tpWWaYgE_NeZEWJn8AEoyDLQ",
@@ -270,49 +153,44 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// récupérer l'email de l'URL
 const urlParams = new URLSearchParams(window.location.search);
 const userEmail = urlParams.get('email'); 
 const balanceEl = document.getElementById('balance');
 const historyEl = document.getElementById('history');
+const errorEl = document.getElementById('errorMsg');
 
-// Mise à jour temps réel solde et historique
-if(userEmail){
+if(!userEmail){
+  balanceEl.textContent = "0 FCFA";
+  errorEl.textContent = "Aucun utilisateur spécifié dans l'URL.";
+  errorEl.style.display = "block";
+} else {
   const userRef = doc(db, 'users', userEmail);
-  onSnapshot(userRef, snap => {
+  
+  // Vérifier si le document existe
+  getDoc(userRef).then(snap => {
     if(snap.exists()){
-      const data = snap.data();
-      balanceEl.textContent = (data.balance || 0).toLocaleString() + " FCFA";
-      const hist = data.history || [];
-      historyEl.innerHTML = hist.length ? hist.map(h=>{
-        return `<li>${h.date} - ${h.type} ${h.pack ? '- '+h.pack : ''} ${h.gain ? '+ '+h.gain.toLocaleString()+' FCFA' : ''}</li>`;
-      }).join('') : '<li>Aucune transaction pour le moment</li>';
+      // Mise à jour en temps réel
+      onSnapshot(userRef, s=>{
+        const data = s.data();
+        balanceEl.textContent = (data.balance || 0).toLocaleString() + " FCFA";
+        const hist = data.history || [];
+        historyEl.innerHTML = hist.length ? hist.map(h=>{
+          return `<li>${h.date} - ${h.type} ${h.pack ? '- '+h.pack : ''} ${h.gain ? '+ '+h.gain.toLocaleString()+' FCFA' : ''}</li>`;
+        }).join('') : '<li>Aucune transaction pour le moment</li>';
+      });
+    } else {
+      balanceEl.textContent = "0 FCFA";
+      historyEl.innerHTML = '<li>Aucune transaction pour le moment</li>';
+      errorEl.textContent = "Utilisateur introuvable dans Firestore !";
+      errorEl.style.display = "block";
     }
+  }).catch(err=>{
+    balanceEl.textContent = "0 FCFA";
+    errorEl.textContent = "Erreur Firestore : "+err.message;
+    errorEl.style.display = "block";
   });
 }
-
-// Machines
-const machines=[
-  {name:"Pack Bronze",min:2000,max:5000,gain:250,colorHue:270},
-  {name:"Pack Silver",min:5000,max:10000,gain:900,colorHue:280},
-  {name:"Pack Gold",min:10000,max:50000,gain:2000,colorHue:290},
-  {name:"Pack Diamond",min:50000,max:1500000,gain:12000,colorHue:300}
-];
-const machineCards=document.getElementById("machineCards");
-machines.forEach(m=>{
-  const div=document.createElement("div");
-  div.className="machine-card";
-  div.style.background=`hsl(${m.colorHue},50%,20%)`;
-  div.innerHTML=`<h3>${m.name}</h3><p>Invest: ${m.min.toLocaleString()} - ${m.max.toLocaleString()} FCFA<br>Gains/12h: ${m.gain.toLocaleString()} FCFA</p>`;
-  div.addEventListener("click",()=>{
-    window.location.href=`solde.html?pack=${encodeURIComponent(m.name)}&min=${m.min}&max=${m.max}&gain=${m.gain}&email=${encodeURIComponent(userEmail)}`;
-  });
-  machineCards.appendChild(div);
-});
-
-// Onglet Retrait
-document.getElementById("retraitBtn").addEventListener("click", ()=>{
-  window.location.href=`solde.html?email=${encodeURIComponent(userEmail)}`;
-});
 </script>
 
 <script>
@@ -333,31 +211,6 @@ function createBubbles(n=40){
   }
 }
 createBubbles();
-
-// Menu
-const menuBtn=document.getElementById("menuBtn");
-const menuDropdown=document.getElementById("menuDropdown");
-menuBtn.onclick=()=>menuDropdown.style.display=menuDropdown.style.display==="block"?"none":"block";
-document.addEventListener("click",e=>{
-  if(!menuBtn.contains(e.target)&&!menuDropdown.contains(e.target)) menuDropdown.style.display="none";
-});
-document.getElementById("logoutBtn").onclick=()=>window.location.href="index.html";
-
-// Onglets
-const tabs=document.querySelectorAll(".tab-btn");
-const sections=document.querySelectorAll(".section");
-tabs.forEach(tab=>{
-  tab.addEventListener("click",()=>{
-    if(tab.id==="retraitBtn"){
-      window.location.href="solde.html?email="+encodeURIComponent(userEmail);
-      return;
-    }
-    tabs.forEach(t=>t.classList.remove("active"));
-    tab.classList.add("active");
-    sections.forEach(sec=>sec.classList.remove("active"));
-    document.getElementById(tab.dataset.target).classList.add("active");
-  });
-});
 </script>
 </body>
 </html>
