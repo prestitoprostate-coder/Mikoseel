@@ -3,37 +3,67 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mikoseel - Dashboard</title>
+<title>Mikoseel — Admin Validation Solde</title>
 <style>
-body{font-family:"Poppins",sans-serif;background:#0c001a;color:#fff;margin:0;padding:0;}
-header{background:linear-gradient(90deg,#6d28d9,#ec4899);padding:15px;text-align:center;font-size:24px;}
-.container{max-width:800px;margin:30px auto;padding:20px;background:rgba(20,0,40,0.8);border-radius:12px;}
-.card{background:rgba(255,255,255,0.05);padding:15px;border-radius:10px;margin-bottom:15px;}
-h2{margin-top:0;color:#a855f7;}
-ul{list-style:none;padding:0;}
-li{padding:5px 0;border-bottom:1px solid rgba(236,72,153,0.2);}
+body{
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg,#0c001a,#4c1d95);
+  color: #fff;
+  padding: 20px;
+}
+h1{text-align:center;margin-bottom:30px;}
+form, .balance-box{
+  max-width:720px;
+  margin:0 auto 20px auto;
+  background:rgba(255,255,255,0.05);
+  padding:20px;
+  border-radius:10px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.3);
+}
+.field{margin-bottom:12px;}
+label{display:block;margin-bottom:6px;font-weight:600;}
+input,select,button{
+  width:100%;padding:10px;border:none;border-radius:6px;
+  background:rgba(255,255,255,0.08);color:#fff;
+}
+button{background:linear-gradient(90deg,#6d28d9,#ec4899);font-weight:bold;cursor:pointer;}
+.balance{font-size:24px;font-weight:bold;text-align:center;margin-top:12px;}
+.muted{font-size:14px;color:#d6c6ff;margin-top:6px;}
 </style>
 </head>
 <body>
 
-<header>Mikoseel Dashboard</header>
+<h1>💰 Admin — Valider le solde</h1>
 
-<div class="container">
-  <div class="card">
-    <h2>Solde</h2>
-    <p id="balance">0 FCFA</p>
+<form id="userForm">
+  <div class="field">
+    <label for="user_email">Email utilisateur</label>
+    <input type="email" id="user_email" placeholder="email@exemple.com" required>
   </div>
+  <button type="submit">Charger le compte</button>
+</form>
 
-  <div class="card">
-    <h2>Historique des transactions</h2>
-    <ul id="history"><li>Aucune transaction pour le moment</li></ul>
+<div class="balance-box" id="balanceBox" style="display:none;">
+  <h2>Solde actuel :</h2>
+  <div class="balance" id="balanceDisplay">0 FCFA</div>
+
+  <div class="field">
+    <label for="packSelect">Pack validé</label>
+    <select id="packSelect">
+      <option value="">-- Sélectionner un pack --</option>
+      <option value="Bronze">Pack Bronze (2 000 – 5 000 FCFA, +250 / 12h)</option>
+      <option value="Silver">Pack Silver (5 000 – 10 000 FCFA, +900 / 12h)</option>
+      <option value="Gold">Pack Gold (10 000 – 50 000 FCFA, +2000 / 12h)</option>
+      <option value="Diamond">Pack Diamond (50 000 – 1 500 000 FCFA, +12000 / 12h)</option>
+    </select>
   </div>
+  <button id="validatePack">Valider le pack</button>
+  <p class="muted">Le gain sera ajouté automatiquement toutes les 12h.</p>
 </div>
 
-<!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 
 // Config Firebase
 const firebaseConfig = {
@@ -47,30 +77,85 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Récupération email depuis l'URL
+const userForm = document.getElementById('userForm');
+const balanceBox = document.getElementById('balanceBox');
+const balanceDisplay = document.getElementById('balanceDisplay');
+const packSelect = document.getElementById('packSelect');
+const validatePackBtn = document.getElementById('validatePack');
+
+let currentUserEmail = '';
+let balance = 0;
+let gainPer12h = 0;
+let intervalId = null;
+
+const packs = {
+  "Bronze": 250,
+  "Silver": 900,
+  "Gold": 2000,
+  "Diamond": 12000
+};
+
+// Pré-remplissage depuis URL (email & pack)
 const urlParams = new URLSearchParams(window.location.search);
-const userEmail = urlParams.get('email');
-if(!userEmail){
-    alert("Aucun utilisateur spécifié !");
-    window.location.href = "login.html"; // retour au login si email absent
-}
+const urlEmail = urlParams.get('email');
+const urlPack = urlParams.get('pack');
+if(urlEmail) document.getElementById('user_email').value = urlEmail;
+if(urlPack) packSelect.value = urlPack;
 
-const balanceEl = document.getElementById('balance');
-const historyEl = document.getElementById('history');
+// Charger le compte
+userForm.addEventListener('submit', async e=>{
+  e.preventDefault();
+  currentUserEmail = document.getElementById('user_email').value.trim();
+  if(!currentUserEmail) return alert("Email requis");
 
-const userRef = doc(db, 'users', userEmail);
-onSnapshot(userRef, snap => {
-    if(snap.exists()){
-        const data = snap.data();
-        balanceEl.textContent = (data.balance || 0).toLocaleString() + " FCFA";
-        const hist = data.history || [];
-        historyEl.innerHTML = hist.length 
-            ? hist.map(h => `<li>${h.date} - ${h.type} ${h.pack ? '- '+h.pack : ''} ${h.gain ? '+ '+h.gain.toLocaleString()+' FCFA' : ''}</li>`).join('')
-            : '<li>Aucune transaction pour le moment</li>';
-    } else {
-        alert("Cet utilisateur n'existe pas !");
-        window.location.href = "login.html";
-    }
+  const userRef = doc(db,'users',currentUserEmail);
+  const snap = await getDoc(userRef);
+  if(!snap.exists()){
+    await setDoc(userRef,{balance:0,history:[],pack:null,lastGain:Date.now()});
+    balance = 0;
+  } else {
+    balance = snap.data().balance || 0;
+  }
+
+  balanceDisplay.textContent = balance.toLocaleString() + " FCFA";
+  balanceBox.style.display='block';
+});
+
+// Valider le pack et lancer gain automatique
+validatePackBtn.addEventListener('click', async e=>{
+  e.preventDefault();
+  const pack = packSelect.value;
+  if(!pack) return alert("Choisissez un pack");
+
+  gainPer12h = packs[pack];
+  const userRef = doc(db,'users',currentUserEmail);
+
+  // Ajouter le pack et montant initial au solde
+  balance += gainPer12h; // ici on ajoute directement le gain initial
+  balanceDisplay.textContent = balance.toLocaleString() + " FCFA";
+
+  await updateDoc(userRef,{
+    pack: pack,
+    balance: balance,
+    history: arrayUnion({type:'Validation pack',pack:pack,gain:gainPer12h,date:new Date().toLocaleString()})
+  });
+
+  alert(`Pack ${pack} validé ! Gains automatiques programmés.`);
+
+  // Supprimer ancien intervalle
+  if(intervalId) clearInterval(intervalId);
+
+  // Incrément automatique toutes les 12h (43200000 ms)
+  intervalId = setInterval(async ()=>{
+    balance += gainPer12h;
+    balanceDisplay.textContent = balance.toLocaleString() + " FCFA";
+    await updateDoc(userRef,{
+      balance: balance,
+      history: arrayUnion({type:'Gain automatique',pack:pack,gain:gainPer12h,date:new Date().toLocaleString()})
+    });
+  }, 43200000);
+
+  // Pour test rapide, tu peux remplacer 43200000 par 12000 (12 sec)
 });
 </script>
 
