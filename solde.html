@@ -3,84 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mikoseel - Gestion du Solde</title>
+<title>Modifier Solde - Mikoseel</title>
 <style>
-body {
-  font-family: "Poppins", sans-serif;
-  margin: 0;
-  padding: 0;
-  background: linear-gradient(120deg, #0c001a, #4c1d95, #6d28d9);
-  color: #fff;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.card {
-  background: rgba(20, 0, 40, 0.7);
-  padding: 30px;
-  border-radius: 16px;
-  box-shadow: 0 0 20px rgba(236, 72, 153, 0.4);
-  width: 90%;
-  max-width: 400px;
-  text-align: center;
-}
-input, select, button {
-  width: 100%;
-  padding: 10px;
-  border: none;
-  border-radius: 8px;
-  margin-top: 10px;
-  font-size: 16px;
-}
-button {
-  background: #ec4899;
-  color: #fff;
-  font-weight: bold;
-  cursor: pointer;
-}
-button:hover {
-  background: #a855f7;
-}
-#balanceBox { display: none; }
+body{font-family:"Poppins",sans-serif; background:#12002a; color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; margin:0;}
+.container{background:rgba(40,0,60,0.8); padding:30px; border-radius:12px; box-shadow:0 0 20px rgba(236,72,153,0.5);}
+input, button{padding:10px 15px; border:none; border-radius:8px; margin:5px 0; font-size:16px;}
+button{background:#ec4899; color:#fff; cursor:pointer;}
+button:hover{background:#d53f8c;}
+label{display:block; margin-top:10px;}
 </style>
 </head>
 <body>
-
-<div class="card">
-  <h2>Gestion du solde utilisateur</h2>
-
-  <form id="userForm">
-    <input type="email" id="email" placeholder="Entrez l'email de l'utilisateur" required>
-    <button type="submit">Vérifier le compte</button>
-  </form>
-
-  <div id="balanceBox">
-    <p><strong>Utilisateur :</strong> <span id="userEmail"></span></p>
-    <p><strong>Solde actuel :</strong> <span id="balanceDisplay">0 FCFA</span></p>
-
-    <select id="actionSelect">
-      <option value="">-- Choisissez une action --</option>
-      <option value="add">Augmenter le solde</option>
-      <option value="reduce">Réduire le solde</option>
-    </select>
-
-    <select id="packSelect">
-      <option value="">-- Choisissez un pack (si ajout) --</option>
-      <option value="Bronze">Pack Bronze (+250)</option>
-      <option value="Silver">Pack Silver (+900)</option>
-      <option value="Gold">Pack Gold (+2000)</option>
-      <option value="Diamond">Pack Diamond (+12000)</option>
-    </select>
-
-    <input type="number" id="customAmount" placeholder="Montant personnalisé (optionnel)">
-    <button id="validateBtn">Valider l'opération</button>
-  </div>
+<div class="container">
+  <h2>Modifier Solde Utilisateur</h2>
+  <p id="userEmail"></p>
+  <label>Montant:</label>
+  <input type="number" id="amount" placeholder="Ex: 5000" />
+  <label>Type:</label>
+  <select id="type">
+    <option value="add">Ajouter</option>
+    <option value="remove">Retirer</option>
+  </select>
+  <button id="submitBtn">Valider</button>
+  <p id="status"></p>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-import { getFirestore, doc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, updateDoc, arrayUnion, setDoc } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBKyAIcBC8tpWWaYgE_NeZEWJn8AEoyDLQ",
@@ -93,82 +43,45 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const userForm = document.getElementById("userForm");
-const emailInput = document.getElementById("email");
-const balanceBox = document.getElementById("balanceBox");
-const userEmailEl = document.getElementById("userEmail");
-const balanceDisplay = document.getElementById("balanceDisplay");
-const actionSelect = document.getElementById("actionSelect");
-const packSelect = document.getElementById("packSelect");
-const customAmountInput = document.getElementById("customAmount");
-const validateBtn = document.getElementById("validateBtn");
+const urlParams = new URLSearchParams(window.location.search);
+const userEmail = urlParams.get('email');
+document.getElementById('userEmail').textContent = "Utilisateur: " + (userEmail || "inconnu");
 
-let currentUserEmail = "";
-let currentBalance = 0;
+document.getElementById('submitBtn').onclick = async () => {
+  const amount = parseFloat(document.getElementById('amount').value);
+  const type = document.getElementById('type').value;
+  const status = document.getElementById('status');
 
-const packs = { Bronze: 250, Silver: 900, Gold: 2000, Diamond: 12000 };
+  if(!userEmail){ status.textContent = "Email utilisateur manquant!"; return; }
+  if(isNaN(amount) || amount <= 0){ status.textContent = "Montant invalide!"; return; }
 
-// Vérification utilisateur
-userForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const email = emailInput.value.trim().toLowerCase();
-  const userRef = doc(db, "users", email);
+  const userRef = doc(db, 'users', userEmail);
   const snap = await getDoc(userRef);
 
-  if (!snap.exists()) {
-    alert("⚠️ Cet utilisateur n'existe pas dans la base de données !");
-    return;
+  if(!snap.exists()){
+    await setDoc(userRef, { balance: 0, history: [] });
   }
 
-  currentUserEmail = email;
-  currentBalance = snap.data().balance || 0;
-  balanceDisplay.textContent = currentBalance.toLocaleString() + " FCFA";
-  userEmailEl.textContent = currentUserEmail;
+  const data = (await getDoc(userRef)).data();
+  let newBalance = data.balance || 0;
 
-  userForm.style.display = "none";
-  balanceBox.style.display = "block";
-});
+  if(type === "add") newBalance += amount;
+  else newBalance -= amount;
 
-// Validation d'une opération (ajout ou réduction)
-validateBtn.addEventListener("click", async () => {
-  if (!currentUserEmail) return alert("Aucun utilisateur sélectionné.");
-
-  const action = actionSelect.value;
-  const pack = packSelect.value;
-  const customAmount = Number(customAmountInput.value) || 0;
-
-  if (!action) return alert("Choisissez une action !");
-  if (action === "add" && !pack && !customAmount)
-    return alert("Choisissez un pack ou entrez un montant à ajouter !");
-  if (action === "reduce" && !customAmount)
-    return alert("Entrez le montant à réduire !");
-
-  const userRef = doc(db, "users", currentUserEmail);
-  const snap = await getDoc(userRef);
-  if (!snap.exists()) return alert("Utilisateur introuvable !");
-
-  let gain = 0;
-  if (action === "add") gain = packs[pack] || customAmount;
-  else if (action === "reduce") gain = -Math.abs(customAmount);
-
-  const newBalance = (snap.data().balance || 0) + gain;
-
-  if (newBalance < 0) return alert("❌ Impossible : le solde ne peut pas être négatif.");
+  if(newBalance < 0){ status.textContent = "Solde insuffisant!"; return; }
 
   await updateDoc(userRef, {
     balance: newBalance,
     history: arrayUnion({
       date: new Date().toLocaleString(),
-      type: action === "add" ? "Ajout" : "Réduction",
-      pack: pack || "Manuel",
-      gain: gain
+      type: type === "add" ? "Dépôt" : "Retrait",
+      gain: amount
     })
   });
 
-  balanceDisplay.textContent = newBalance.toLocaleString() + " FCFA";
-  alert("✅ Solde mis à jour avec succès !");
-});
+  status.textContent = `Solde mis à jour: ${newBalance.toLocaleString()} FCFA`;
+  document.getElementById('amount').value = "";
+};
 </script>
-
 </body>
 </html>
